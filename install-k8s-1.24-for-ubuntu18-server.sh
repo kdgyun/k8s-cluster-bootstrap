@@ -1,6 +1,13 @@
 #!/bin/sh
 
-HOME_PATH=$HOME
+
+# bool function to test if the user is root or not (POSIX only)
+is_user_root ()
+{
+    [[ "${EUID:-$(id -u)}" -eq 0 ]]
+}
+
+HOME_PATH=$PWD
 
 
 # requirement package list
@@ -120,8 +127,8 @@ echo
 
 # Add the GPG key for kubernetes
 echo "Add the GPG key for kubernetes ..."
-cd ~
-if ! [[ "$PWD" = "$HOME" ]]; then 
+cd $HOME_PATH
+if ! [[ "$PWD" = "$HOME_PATH" ]]; then 
   cd $HOME_PATH
 fi
 curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
