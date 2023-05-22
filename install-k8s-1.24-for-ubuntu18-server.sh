@@ -1,6 +1,7 @@
 #!/bin/sh
 
-HOME_PATH='$HOME'
+HOME_PATH=$HOME
+
 
 # requirement package list
 if ! which wget > /dev/null; then
@@ -24,48 +25,66 @@ fi
 cd $HOME_PATH
 
 # disabled swap memory and firewall
-echo -n "swap off memory ..."
+echo "swap off memory ..."
+echo
 swapoff -a
 sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 sleep 3
-echo "OK!"
+echo 'Success!'
+echo '========================================='
+echo
 
 echo -n "inactive ufw ..."
 ufw disable
 sleep 3
 echo "OK!"
+echo
 
-if ! [[ "$PWD" = "$HOME" ]]; then 
+if ! [[ "$PWD" = "$HOME_PATH" ]]; then 
   cd $HOME_PATH
 fi
 
 # Download the GPG key for docker
-echo -n "Download the GPG key for docker ..."
+echo "Download the GPG key for docker ..."
+echo
 wget -O - https://download.docker.com/linux/ubuntu/gpg > ./docker.key
 gpg --no-default-keyring --keyring ./docker.gpg --import ./docker.key
 gpg --no-default-keyring --keyring ./docker.gpg --export > ./docker-archive-keyring.gpg
 mv ./docker-archive-keyring.gpg /etc/apt/trusted.gpg.d/
-echo "OK!"
+echo 'Success!'
+echo '========================================='
+echo
+echo
 
 # Add the docker repository
-echo -n "Add the docker repository ..."
+echo "Add the docker repository ..."
+echo
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-echo "OK!"
+echo 'Success!'
+echo '========================================='
+echo
+echo
 
 # clone the repository
-echo -n "Add the docker repository ..."
+echo "Add the docker repository ..."
 git clone https://github.com/Mirantis/cri-dockerd.git
-echo "OK!"
+echo 'Success!'
+echo '========================================='
+echo
+echo
 
 # Login as root and run below commands
-echo -n "Login as root and run below commands ..."
+echo "Login as root and run below commands ..."
 wget https://storage.googleapis.com/golang/getgo/installer_linux
 chmod +x ./installer_linux
 ./installer_linux
 source ~/.bash_profile
 
 sleep 3
-echo "OK!"
+echo 'Success!'
+echo '========================================='
+echo
+echo
 
 
 # Install Container runtime (cri-dockerd)
@@ -75,7 +94,8 @@ if ! [[ "$PWD" = "${HOME_PATH}/cri-dockerd" ]]; then
   cd $HOME_PATH
 fi
 
-echo -n "Install the cri-dockerd ... (It will takes about 10~30 minutes)"
+echo "Install the cri-dockerd ... (It will takes about 10~30 minutes)"
+echo
 
 groupadd docker
 usermod -aG docker $USER
@@ -92,34 +112,46 @@ systemctl enable --now cri-docker.socket
 systemctl restart cri-docker.socket
 
 sleep 15
-echo "OK!"
+echo 'Success!'
+echo '========================================='
+echo
+echo
 
 
 # Add the GPG key for kubernetes
-echo -n "Add the GPG key for kubernetes ..."
+echo "Add the GPG key for kubernetes ..."
 cd ~
 if ! [[ "$PWD" = "$HOME" ]]; then 
   cd $HOME_PATH
 fi
 curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-echo "OK!"
+echo 'Success!'
+echo '========================================='
+echo
+echo
 
 # Add the kubernetes repository
 echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
-echo "OK!"
+echo 'Success!'
+echo '========================================='
+echo
+echo
 
 apt-get update
 
 
 # Install Docker and Kubernetes packages.
-echo -n "Install the kubernetes components ..."
+echo "Install the kubernetes components ..."
 apt-get install -y docker-ce kubelet=1.24.8-00 kubeadm=1.24.8-00 kubectl=1.24.8-00
 apt-mark hold docker-ce kubelet kubeadm kubectl
-echo "OK!"
+echo 'Success!'
+echo '========================================='
+echo
+echo
 
 
 # Enable the iptables bridge
-echo -n "Enable the iptables bridge & sysctl params required by setup, params persist across reboots ..."
+echo "Enable the iptables bridge & sysctl params required by setup, params persist across reboots ..."
 cat <<EOF | tee /etc/modules-load.d/k8s.conf
 overlay
 br_netfilter
