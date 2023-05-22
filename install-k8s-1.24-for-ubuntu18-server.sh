@@ -4,8 +4,12 @@
 # bool function to test if the user is root or not (POSIX only)
 is_user_root ()
 {
-    [[ "${EUID:-$(id -u)}" -eq 0 ]]
+    [[ "${EUID:-$(id -u)}" -ne 0 ]]
 }
+
+if is_user_root; then
+  echo "Please run as root"
+  exit 1
 
 HOME_PATH=$PWD
 
