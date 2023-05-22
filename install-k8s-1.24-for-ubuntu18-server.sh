@@ -137,7 +137,12 @@ echo '========================================='
 echo
 echo
 
+# Update apt-get
 apt-get update
+if [[ $? -ne 0 ]]; then
+  echo 'Fail....'
+  exit 1
+  
 
 
 # Install Docker and Kubernetes packages.
