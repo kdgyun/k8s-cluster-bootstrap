@@ -1,15 +1,12 @@
-#!/bin/sh
+#! /usr/bin/env bash
 
 
-# bool function to test if the user is root or not (POSIX only)
-is_user_root ()
-{
-    [[ "${EUID:-$(id -u)}" -ne 0 ]]
-}
-
-if is_user_root; then
+# bool function to test if the user is root or not
+if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
   echo "Please run as root"
   exit 1
+fi
+
 
 HOME_PATH=$PWD
 
