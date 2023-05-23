@@ -148,9 +148,24 @@ echo
 # Update apt-get
 apt-get update
 if [[ $? -ne 0 ]]; then
+  apt-get update >> apt-get-update.log
   echo 'Fail....'
-  exit 1
+  grep -o 'NO_PUBKEY.*' apt-get-update.log | while read -r _ key; do 
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"
+    break
+  done
+  rm apt-get-update.log
   
+  apt-get update >> apt-get-update.log
+
+  if [[ $? -ne 0 ]]; then
+    echo 'Fail.... 2 '
+    curl -fsSLo /etc/apt/trusted.gpg.d/kubernetes-archive-keyring.gpg https://dl.k8s.io/apt/doc/apt-key.gpg
+    echo "deb [signed-by=/etc/apt/trusted.gpg.d/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+
+    rm apt-get-update.log
+  fi
+fi
 
 
 # Install Docker and Kubernetes packages.
