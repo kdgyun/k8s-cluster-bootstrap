@@ -165,6 +165,7 @@ if [[ $? -ne 0 ]]; then
 
     rm apt-get-update.log
   fi
+  apt-get update
 fi
 
 
