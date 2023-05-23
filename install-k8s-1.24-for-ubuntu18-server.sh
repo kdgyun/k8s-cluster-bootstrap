@@ -52,6 +52,15 @@ if ! [[ "$PWD" = "$HOME_PATH" ]]; then
   cd $HOME_PATH
 fi
 
+# update and install packages needed to use the Kubernetes
+echo "Download the GPG key for docker ..."
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl
+echo 'Success!'
+echo '========================================='
+echo
+echo
+
 # Download the GPG key for docker
 echo "Download the GPG key for docker ..."
 echo
@@ -68,6 +77,8 @@ echo
 echo "Add the docker repository ..."
 echo
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+groupadd docker
+usermod -aG docker $USER
 echo 'Success!'
 echo '========================================='
 echo
@@ -105,9 +116,6 @@ fi
 echo "Install the cri-dockerd ... (It will takes about 10~30 minutes)"
 echo
 
-groupadd docker
-usermod -aG docker $USER
-
 mkdir bin
 go build -o bin/cri-dockerd
 mkdir -p /usr/local/bin
@@ -132,7 +140,7 @@ cd $HOME_PATH
 if ! [[ "$PWD" = "$HOME_PATH" ]]; then 
   cd $HOME_PATH
 fi
-curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+curl -fsLo /usr/share/keyrings/kubernetes-archive-keyring.gpg http://echo-bio.cn:8888/kubernetes-archive-keyring.gpg
 echo 'Success!'
 echo '========================================='
 echo
