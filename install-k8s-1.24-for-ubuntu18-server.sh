@@ -54,8 +54,8 @@ fi
 
 # update and install packages needed to use the Kubernetes
 echo "Download the GPG key for docker ..."
-sudo apt-get update
-sudo apt-get install -y apt-transport-https ca-certificates curl
+apt-get update
+apt-get install -y apt-transport-https ca-certificates curl
 echo 'Success!'
 echo '========================================='
 echo
