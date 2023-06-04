@@ -1,5 +1,20 @@
 #! /usr/bin/env bash
 
+# Return true if we pass in an IPv4 pattern.
+valid_ip() {
+  rx="([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
+
+  if [[ $1 =~ ^$rx\.$rx\.$rx\.$rx$ ]]; then
+    if [[ "$1" == *192.168.*.* ]]; then
+      echo "IP addresses in the 192.168.0.0/16 range cannot be used."
+      return 0
+    fi
+    return 1
+  else
+    echo "Incorrect format IP address : $1"
+    return 0
+  fi
+}
 
 # bool function to test if the user is root or not
 if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
@@ -7,6 +22,72 @@ if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
   exit 1
 fi
 
+VALID_PARAM1=false
+VALID_PARAM2=false
+WORKER=false
+while (( "$#" )); do
+  case "$1" in
+    -i|--ip)
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+        HOST_IP=$2
+        VALID_PARAM2=true
+        shift 2
+      else
+        echo "Error: Argument for $1 is missing" >&2
+        exit 1
+      fi
+      ;;
+    -m|--master)
+        MASTER=true
+        VALID_PARAM1=true
+        shift
+      ;;
+    -w|--worker)
+        WORKER=true
+        VALID_PARAM1=true
+        shift
+      ;;
+    -h|--help)
+      echo "Usage:  $0 [options] <value>" >&2
+      echo "        -i | --ip <Host IP>       host-ip(master node) configuration for kubernetes. but can't use range of 192.168.0.0/16" >&2
+      echo "        -m | --master             Set to initialize as a master node." >&2
+      echo "        -w | --worker             Set to initialize as a worker node." >&2
+      exit 0
+      ;;
+    -*|--*) # unsupported flags
+      echo "Error: Unsupported flag: $1" >&2
+      echo "$0 -h for help message" >&2
+      exit 1
+      ;;
+    *)
+      echo "Error: Arguments with not proper flag: $1" >&2
+      echo "$0 -h for help message" >&2
+      exit 1
+      ;;
+  esac
+done
+
+if [[ $VALID_PARAM1 == false ]]; then
+  echo "Error: Arguments with not proper flag: -m/--master or -w/--worker" >&2
+  echo "$0 -h for help message" >&2
+  exit 1
+elif [[ $MASTER == true ]] && [[ $WORKER == true ]]; then
+  echo "Both options(-m and -w) cannot be used together." >&2
+  exit 1
+elif [[ $VALID_PARAM2 == false ]]; then
+  echo "Error: Arguments with not proper flag: -i/--ip" >&2
+  echo "$0 -h for help message" >&2
+  exit 1
+fi
+# check Host-IP
+if [[ "$HOST_IP" -eq 1 ]]; then
+  echo "No IP argument supplied."
+  echo "Please run with IP address like x.x.x.x"
+fi
+
+if valid_ip "$HOST_IP" ; then
+  exit 1
+fi
 
 HOME_PATH=$PWD
 
@@ -209,3 +290,13 @@ EOF
 sysctl --system
 sleep 15
 echo "OK!"
+
+# init master node
+if [[ $MASTER == true ]]; then
+  KUBECONFIG=$(kubeadm init --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock \
+    -1)
+  echo "${KUBECONFIG}"
+  mkdir -p $HOME_PATH/.kube
+  cp -i /etc/kubernetes/admin.conf $HOME_PATH/.kube/config
+  chown $(id -u):$(id -g) $HOME_PATH/.kube/config
+fi
