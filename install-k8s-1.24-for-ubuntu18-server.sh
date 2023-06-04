@@ -60,10 +60,11 @@ while (( "$#" )); do
       ;;
     -h|--help)
       echo "Usage:  $0 [options] <value>" >&2
+      echo "        -h | --help                                       This help text" >&2
       echo "        -i | --ip <Host IP>                               host-ip(master node) configuration for kubernetes. but can't use range of 192.168.0.0/16" >&2
       echo "        -m | --master                                     Set to initialize as a master node." >&2
-      echo "        -w | --worker                                     Set to initialize as a worker node." >&2
       echo "        -r | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes." >&2
+      echo "        -w | --worker                                     Set to initialize as a worker node." >&2
       exit 0
       ;;
     -*|--*) # unsupported flags
