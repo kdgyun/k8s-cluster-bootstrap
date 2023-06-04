@@ -25,12 +25,23 @@ fi
 VALID_PARAM1=false
 VALID_PARAM2=false
 WORKER=false
+OPT_REGULAR_USER=false
 while (( "$#" )); do
   case "$1" in
     -i|--ip)
       if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
         HOST_IP=$2
         VALID_PARAM2=true
+        shift 2
+      else
+        echo "Error: Argument for $1 is missing" >&2
+        exit 1
+      fi
+      ;;
+    -r|--regularuser)
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+        REGULAR_USER_PATH=$2
+        OPT_REGULAR_USER=true
         shift 2
       else
         echo "Error: Argument for $1 is missing" >&2
@@ -49,9 +60,10 @@ while (( "$#" )); do
       ;;
     -h|--help)
       echo "Usage:  $0 [options] <value>" >&2
-      echo "        -i | --ip <Host IP>       host-ip(master node) configuration for kubernetes. but can't use range of 192.168.0.0/16" >&2
-      echo "        -m | --master             Set to initialize as a master node." >&2
-      echo "        -w | --worker             Set to initialize as a worker node." >&2
+      echo "        -i | --ip <Host IP>                               host-ip(master node) configuration for kubernetes. but can't use range of 192.168.0.0/16" >&2
+      echo "        -m | --master                                     Set to initialize as a master node." >&2
+      echo "        -w | --worker                                     Set to initialize as a worker node." >&2
+      echo "        -r | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes." >&2
       exit 0
       ;;
     -*|--*) # unsupported flags
@@ -293,10 +305,16 @@ echo "OK!"
 
 # init master node
 if [[ $MASTER == true ]]; then
-  KUBECONFIG=$(kubeadm init --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock \
+  KUBECONFIG=$(kubeadm init --kubernetes-version=v1.24.0 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock \
     -1)
   echo "${KUBECONFIG}"
   mkdir -p $HOME_PATH/.kube
   cp -i /etc/kubernetes/admin.conf $HOME_PATH/.kube/config
   chown $(id -u):$(id -g) $HOME_PATH/.kube/config
+
+  if [[ $OPT_REGULAR_USER == true ]]; then
+    mkdir -p $REGULAR_USER_PATH/.kube
+    cp -i /etc/kubernetes/admin.conf $REGULAR_USER_PATH/.kube/config
+    chown $(id -u):$(id -g) $REGULAR_USER_PATH/.kube/config
+  fi
 fi
