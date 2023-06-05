@@ -103,7 +103,7 @@ if valid_ip "$HOST_IP" ; then
 fi
 
 HOME_PATH=$HOME
-
+echo "Home path is $HOME_PATH"
 
 # requirement package list
 if ! which wget > /dev/null; then
@@ -306,10 +306,11 @@ echo "OK!"
 
 # init master node
 if [[ $MASTER == true ]]; then
-  KUBECONFIG="========================\n\n"
-  KUBECONFIG+=$(kubeadm init --kubernetes-version=v1.24.8 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock \
+  LINE="========================\n\n"
+  INITKUBECONFIG=$(kubeadm init --kubernetes-version=v1.24.8 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock \
     -1)
-  echo "${KUBECONFIG}"
+  echo "$INITKUBECONFIG"
+  echo "${INITKUBECONFIG}"
   mkdir -p $HOME_PATH/.kube
   cp -i /etc/kubernetes/admin.conf $HOME_PATH/.kube/config
   chown $(id -u):$(id -g) $HOME_PATH/.kube/config
