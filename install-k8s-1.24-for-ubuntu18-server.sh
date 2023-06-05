@@ -307,8 +307,9 @@ echo "OK!"
 # init master node
 if [[ $MASTER == true ]]; then
   LINE="========================\n\n"
-  INITKUBECONFIG=$(kubeadm init --kubernetes-version=v1.24.8 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock \
+  INITKUBECONFIG=$(kubeadm init --kubernetes-version=v1.24.0 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock \
     -1)
+  echo $LINE
   echo "$INITKUBECONFIG"
   echo "${INITKUBECONFIG}"
   mkdir -p $HOME_PATH/.kube
