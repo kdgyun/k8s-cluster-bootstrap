@@ -102,7 +102,7 @@ if valid_ip "$HOST_IP" ; then
   exit 1
 fi
 
-HOME_PATH=$PWD
+HOME_PATH=$HOME
 
 
 # requirement package list
@@ -306,7 +306,8 @@ echo "OK!"
 
 # init master node
 if [[ $MASTER == true ]]; then
-  KUBECONFIG=$(kubeadm init --kubernetes-version=v1.24.0 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock \
+  KUBECONFIG="========================\n\n"
+  KUBECONFIG+=$(kubeadm init --kubernetes-version=v1.24.8 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock \
     -1)
   echo "${KUBECONFIG}"
   mkdir -p $HOME_PATH/.kube
