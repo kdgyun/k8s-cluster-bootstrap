@@ -91,7 +91,7 @@ while (( "$#" )); do
     -h|--help)
       printstyle "Usage:  $0 [options] <value> \n"
       printstyle "        -h | --help                                       This help text \n"
-      printstyle "        -i | --ip <Host IP>                               host-ip(master node) configuration for kubernetes. but can't use range of 192.168.0.0/16 \n"
+      printstyle "        -i | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. but can't use range of 192.168.0.0/16 \n"
       printstyle "        -m | --master                                     Set to initialize as a master node. \n"
       printstyle "        -r | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes. \n"
       printstyle "        -w | --worker                                     Set to initialize as a worker node. \n"
@@ -325,7 +325,7 @@ if [[ $MASTER == true ]]; then
   printstyle "Generating cluster... \n" 'info'
   lineprint
 
-  kubeadm init --kubernetes-version=v1.24.0 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock
+  kubeadm init --kubernetes-version=v1.24.8 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock
   printstyle '\nSuccess generate cluster! \n \n' 'success'
   printstyle "Generating config... \n" 'info'
   mkdir -p $HOME_PATH/.kube
