@@ -39,7 +39,7 @@ valid_ip() {
 }
 
 lineprint() {
-  printf "%${COLUMNS}s\n" | tr " " "="
+  printf %${COLUMNS}s\n | tr " " "="
 }
 
 # bool function to test if the user is root or not
@@ -162,7 +162,7 @@ sleep 3
 printstyle 'Success! \n \n' "success"
 
 lineprint
-printstyle -n "inactive ufw ...\n" "info"
+printstyle "inactive ufw ...\n" "info"
 lineprint
 ufw disable
 sleep 3
@@ -198,31 +198,21 @@ lineprint
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 groupadd docker
 usermod -aG docker $USER
-printstyle 'Success!' 'success'
-
-printstyle
-printstyle
+printstyle 'Success! \n \n' 'success'
 
 # clone the repository
-printstyle "Add the docker repository ..."
+printstyle "Add the docker repository ... \n" 'info'
 git clone https://github.com/Mirantis/cri-dockerd.git
-printstyle 'Success!'
-printstyle '========================================='
-printstyle
-printstyle
+printstyle 'Success! \n \n' 'success'
 
 # Login as root and run below commands
-printstyle "Login as root and run below commands ..."
+printstyle "Login as root and run below commands ... \n" 'info'
 wget https://storage.googleapis.com/golang/getgo/installer_linux
 chmod +x ./installer_linux
 ./installer_linux
 source ~/.bash_profile
-
 sleep 3
-printstyle 'Success!'
-printstyle '========================================='
-printstyle
-printstyle
+printstyle 'Success! \n \n' 'success'
 
 
 # Install Container runtime (cri-dockerd)
@@ -232,9 +222,9 @@ if ! [[ "$PWD" = "${HOME_PATH}/cri-dockerd" ]]; then
   cd $HOME_PATH
 fi
 
-printstyle "Install the cri-dockerd ... (It will takes about 10~30 minutes)"
-printstyle
-
+lineprint
+printstyle "Install the cri-dockerd ... (It will takes about 10~30 minutes) \n" 'info'
+lineprint
 mkdir bin
 go build -o bin/cri-dockerd
 mkdir -p /usr/local/bin
@@ -298,7 +288,7 @@ lineprint
 printstyle "Install the kubernetes components ... \n" 'info'
 apt-get install -y docker-ce kubelet=1.24.8-00 kubeadm=1.24.8-00 kubectl=1.24.8-00
 apt-mark hold docker-ce kubelet kubeadm kubectl
-printstyle '\n Success! \n \n' 'success'
+printstyle '\nSuccess! \n \n' 'success'
 
 # Enable the iptables bridge
 lineprint
@@ -332,7 +322,7 @@ if [[ $MASTER == true ]]; then
   lineprint
 
   kubeadm init --kubernetes-version=v1.24.0 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock
-  printstyle '\n Success generate cluster! \n \n' 'success'
+  printstyle '\nSuccess generate cluster! \n \n' 'success'
   printstyle "Generating config \n" 'info'
   mkdir -p $HOME_PATH/.kube
   cp -i /etc/kubernetes/admin.conf $HOME_PATH/.kube/config
@@ -343,11 +333,12 @@ if [[ $MASTER == true ]]; then
     cp -i /etc/kubernetes/admin.conf $REGULAR_USER_PATH/.kube/config
     chown $(id -u):$(id -g) $REGULAR_USER_PATH/.kube/config
   fi
-  printstyle '\n Success generate config! \n \n' 'success'
-  printstyle "Generating token \n" 'info'
+  printstyle 'Success generate config! \n \n' 'success'
+  printstyle "Generating token... \n" 'info'
   KTOKEN=$(kubeadm token create --print-join-command)
   printstyle 'Token is :' 'info'
-  echo '$KTOKEN'
-  echo '$KTOKEN' > /tmp/k8stkfile.kstk
+  echo "$KTOKEN"
+  echo "$KTOKEN" > /tmp/k8stkfile.kstk
+  chmod 755 /tmp/k8stkfile.kstk
   printstyle 'Success! \n \n' 'success'
 fi
