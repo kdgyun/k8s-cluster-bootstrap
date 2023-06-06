@@ -346,3 +346,5 @@ if [[ $MASTER == true ]]; then
   chmod 755 /tmp/k8stkfile.kstk
   printstyle 'Success! \n \n' 'success'
 fi
+
+# sudo scp -o StrictHostKeyChecking=no ubuntu@10.0.0.4:/tmp/k8stkfile.kstk ./
