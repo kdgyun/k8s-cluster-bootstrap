@@ -39,7 +39,11 @@ valid_ip() {
 }
 
 lineprint() {
-  printf %${COLUMNS}s\n | tr " " "="
+  if [[ -z "$COLUMNS" ]]; then
+    printf "%70s\n" | tr " " "="
+  else
+    printf "%${COLUMNS}s\n" | tr " " "="
+  fi
 }
 
 # bool function to test if the user is root or not
