@@ -327,7 +327,7 @@ if [[ $MASTER == true ]]; then
 
   kubeadm init --kubernetes-version=v1.24.0 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock
   printstyle '\nSuccess generate cluster! \n \n' 'success'
-  printstyle "Generating config \n" 'info'
+  printstyle "Generating config... \n" 'info'
   mkdir -p $HOME_PATH/.kube
   cp -i /etc/kubernetes/admin.conf $HOME_PATH/.kube/config
   chown $(id -u):$(id -g) $HOME_PATH/.kube/config
