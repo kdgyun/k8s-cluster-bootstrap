@@ -285,7 +285,7 @@ printstyle 'Success! \n \n' 'success'
 # Add the kubernetes repository
 echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
 sleep 2
-printstyle '\n Success! \n \n' 'success'
+printstyle '\nSuccess! \n \n' 'success'
 
 # Update apt-get
 apt-get update
@@ -386,7 +386,7 @@ if [[ $VALID_WORKER == true ]]; then
   lineprint
   printstyle "Joining cluster... \n" 'info'
   lineprint
-  sshpass -p $MASTER_PWD rsync --progress $MASTER_USERNAME@$HOST_IP:/tmp/k8stkfile.kstk /tmp/k8stkfile.kstk
+  sshpass -p $MASTER_PWD rsync -e "ssh -o StrictHostKeyChecking=no" --progress $MASTER_USERNAME@$HOST_IP:/tmp/k8stkfile.kstk /tmp/k8stkfile.kstk
   TOKENCOMM=$(</tmp/k8stkfile.kstk)
   eval "$(TOKENCOMM)"
   printstyle "Success! \n" 'success'
