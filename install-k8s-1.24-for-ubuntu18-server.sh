@@ -285,7 +285,7 @@ printstyle 'Success! \n \n' 'success'
 # Add the kubernetes repository
 echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
 sleep 2
-printstyle '\n Success! \n \n' 'success'
+printstyle '\nSuccess! \n \n' 'success'
 
 # Update apt-get
 apt-get update
