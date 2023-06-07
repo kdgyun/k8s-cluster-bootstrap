@@ -114,7 +114,7 @@ while (( "$#" )); do
       printstyle "        -m | --master                                     Set to initialize as a master node. \n"
       printstyle "        -p | --password                                   Use password(master node) to access the master for a token copy when initialing worker node. \n"
       printstyle "        -r | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes. \n"
-      printstyle "        -u | --password                                   Use username(master node) to access the master for a token copy when initialing worker node. \n"
+      printstyle "        -u | --username                                   Use username(master node) to access the master for a token copy when initialing worker node. \n"
       printstyle "        -w | --worker                                     Set to initialize as a worker node. \n"
       exit 0
       ;;
@@ -138,10 +138,10 @@ elif [[ $VALID_PARAM2 == false ]]; then
   printstyle "Error: Arguments with not proper flag: -i/--ip \n" "danger"
   printstyle "$0 -h for help message \n" "danger"
   exit 1
-elif [[ $VALID_WORKER == true ]] && [[ $VALID_USERNAME == false]]; then
+elif [[ $VALID_WORKER == true ]] && [[ $VALID_USERNAME == false ]]; then
   printstyle "Error: Arguments and flag with not proper flag: -u/--username or -p/--password \n" "danger"
   exit 1
-elif [[ $VALID_WORKER == true ]] && [[ $VALID_PWD == false]]; then
+elif [[ $VALID_WORKER == true ]] && [[ $VALID_PWD == false ]]; then
   printstyle "Error: Arguments and flag with not proper flag: -u/--username or -p/--password \n" "danger"
   exit 1
 fi
