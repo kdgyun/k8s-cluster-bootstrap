@@ -386,7 +386,7 @@ if [[ $VALID_WORKER == true ]]; then
   lineprint
   printstyle "Joining cluster... \n" 'info'
   lineprint
-  sshpass -p $MASTER_PWD rsync --progress $MASTER_USERNAME@$HOST_IP:/tmp/k8stkfile.kstk /tmp/k8stkfile.kstk
+  sshpass -p $MASTER_PWD rsync -e "ssh -o StrictHostKeyChecking=no" --progress $MASTER_USERNAME@$HOST_IP:/tmp/k8stkfile.kstk /tmp/k8stkfile.kstk
   TOKENCOMM=$(</tmp/k8stkfile.kstk)
   eval "$(TOKENCOMM)"
   printstyle "Success! \n" 'success'
