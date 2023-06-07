@@ -373,9 +373,13 @@ if [[ $VALID_MASTER == true ]]; then
   echo "$KTOKEN" > /tmp/k8stkfile.kstk
   chmod 755 /tmp/k8stkfile.kstk
   printstyle 'Success! \n \n' 'success'
+  lineprint
+  printstyle "Installing cni with calico... \n" 'info'
+  lineprint
   sleep 120
   curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calico.yaml -O
   kubectl apply -f calico.yaml
+  printstyle "Success! \n" 'success'
 fi
 
 if [[ $VALID_WORKER == true ]]; then
@@ -385,4 +389,5 @@ if [[ $VALID_WORKER == true ]]; then
   sshpass -p $MASTER_PWD rsync --progress $MASTER_USERNAME@$HOST_IP:/tmp/k8stkfile.kstk /tmp/k8stkfile.kstk
   TOKENCOMM=$(</tmp/k8stkfile.kstk)
   eval "$(TOKENCOMM)"
+  printstyle "Success! \n" 'success'
 fi
