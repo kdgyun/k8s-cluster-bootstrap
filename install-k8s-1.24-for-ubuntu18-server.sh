@@ -112,9 +112,9 @@ while (( "$#" )); do
       printstyle "        -h | --help                                       This help text \n"
       printstyle "        -i | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. but can't use range of 192.168.0.0/16 \n"
       printstyle "        -m | --master                                     Set to initialize as a master node. \n"
-      printstyle "        -p | --password                                   Use password(master node) to access the master for a token copy when initialing worker node. \n"
+      printstyle "        -p | --password <Password>                        Use password(master node) to access the master for a token copy when initialing worker node. \n"
       printstyle "        -r | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes. \n"
-      printstyle "        -u | --username                                   Use username(master node) to access the master for a token copy when initialing worker node. \n"
+      printstyle "        -u | --username <Username>                        Use username(master node) to access the master for a token copy when initialing worker node. \n"
       printstyle "        -w | --worker                                     Set to initialize as a worker node. \n"
       exit 0
       ;;
