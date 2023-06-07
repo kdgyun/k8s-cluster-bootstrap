@@ -52,10 +52,11 @@ if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
   exit 1
 fi
 
-VALID_PARAM1=false
 VALID_PARAM2=false
-WORKER=false
+VALID_WORKER=false
 OPT_REGULAR_USER=false
+VALID_USERNAME=false
+VALID_PWD=false
 while (( "$#" )); do
   case "$1" in
     -i|--ip)
@@ -79,21 +80,41 @@ while (( "$#" )); do
       fi
       ;;
     -m|--master)
-        MASTER=true
-        VALID_PARAM1=true
+        VALID_MASTER=true
         shift
       ;;
     -w|--worker)
-        WORKER=true
-        VALID_PARAM1=true
+        VALID_WORKER=true
         shift
+      ;;
+    -u|--username)
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+        MASTER_USERNAME=$2
+        VALID_USERNAME=true
+        shift 2
+      else
+        printstyle "Error: Argument for $1 is missing \n" "danger"
+        exit 1
+      fi
+      ;;
+    -p|--password)
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+        MASTER_PWD=$2
+        VALID_PWD=true
+        shift 2
+      else
+        printstyle "Error: Argument for $1 is missing \n" "danger"
+        exit 1
+      fi
       ;;
     -h|--help)
       printstyle "Usage:  $0 [options] <value> \n"
       printstyle "        -h | --help                                       This help text \n"
       printstyle "        -i | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. but can't use range of 192.168.0.0/16 \n"
       printstyle "        -m | --master                                     Set to initialize as a master node. \n"
+      printstyle "        -p | --password                                   Use password(master node) to access the master for a token copy when initialing worker node. \n"
       printstyle "        -r | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes. \n"
+      printstyle "        -u | --password                                   Use username(master node) to access the master for a token copy when initialing worker node. \n"
       printstyle "        -w | --worker                                     Set to initialize as a worker node. \n"
       exit 0
       ;;
@@ -110,16 +131,18 @@ while (( "$#" )); do
   esac
 done
 
-if [[ $VALID_PARAM1 == false ]]; then
-  printstyle "Error: Arguments with not proper flag: -m/--master or -w/--worker \n" "danger"
-  printstyle "$0 -h for help message\n" "danger"
-  exit 1
-elif [[ $MASTER == true ]] && [[ $WORKER == true ]]; then
+if [[ $VALID_MASTER == true ]] && [[ $VALID_WORKER == true ]]; then
   printstyle "Both options(-m and -w) cannot be used together.\n" "danger"
   exit 1
 elif [[ $VALID_PARAM2 == false ]]; then
   printstyle "Error: Arguments with not proper flag: -i/--ip \n" "danger"
   printstyle "$0 -h for help message \n" "danger"
+  exit 1
+elif [[ $VALID_WORKER == true ]] && [[ $VALID_USERNAME == false]]; then
+  printstyle "Error: Arguments and flag with not proper flag: -u/--username or -p/--password \n" "danger"
+  exit 1
+elif [[ $VALID_WORKER == true ]] && [[ $VALID_PWD == false]]; then
+  printstyle "Error: Arguments and flag with not proper flag: -u/--username or -p/--password \n" "danger"
   exit 1
 fi
 # check Host-IP
@@ -178,16 +201,16 @@ fi
 
 # update and install packages needed to use the Kubernetes
 lineprint
-printstyle 'Download the GPG key for docker ... \n' 'info'
+printstyle 'Downloading the GPG key for docker ... \n' 'info'
 lineprint
 apt-get update
-apt-get install -y apt-transport-https ca-certificates curl
+apt-get install -y apt-transport-https ca-certificates curl sshpass
 printstyle 'Success! \n \n' 'success'
 
 
 # Download the GPG key for docker
 lineprint
-printstyle "Download the GPG key for docker ... \n" 'info'
+printstyle "Downloading the GPG key for docker ... \n" 'info'
 lineprint
 wget -O - https://download.docker.com/linux/ubuntu/gpg > ./docker.key
 gpg --no-default-keyring --keyring ./docker.gpg --import ./docker.key
@@ -197,7 +220,7 @@ printstyle 'Success! \n \n' 'success'
 
 # Add the docker repository
 lineprint
-printstyle "Add the docker repository ... \n" 'info'
+printstyle "Adding the docker repository ... \n" 'info'
 lineprint
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 groupadd docker
@@ -205,12 +228,16 @@ usermod -aG docker $USER
 printstyle 'Success! \n \n' 'success'
 
 # clone the repository
-printstyle "Add the docker repository ... \n" 'info'
+lineprint
+printstyle "Cloning the docker repository ... \n" 'info'
+lineprint
 git clone https://github.com/Mirantis/cri-dockerd.git
 printstyle 'Success! \n \n' 'success'
 
 # Login as root and run below commands
+lineprint
 printstyle "Login as root and run below commands ... \n" 'info'
+lineprint
 wget https://storage.googleapis.com/golang/getgo/installer_linux
 chmod +x ./installer_linux
 ./installer_linux
@@ -289,14 +316,15 @@ fi
 
 # Install Docker and Kubernetes packages.
 lineprint
-printstyle "Install the kubernetes components ... \n" 'info'
+printstyle "Installing the kubernetes components ... \n" 'info'
+lineprint
 apt-get install -y docker-ce kubelet=1.24.8-00 kubeadm=1.24.8-00 kubectl=1.24.8-00
 apt-mark hold docker-ce kubelet kubeadm kubectl
 printstyle '\nSuccess! \n \n' 'success'
 
 # Enable the iptables bridge
 lineprint
-printstyle "Enable the iptables bridge & sysctl params required by setup, params persist across reboots ..." 'info'
+printstyle "Enable the iptables bridge & sysctl params required by setup, params persist across reboots ... \n" 'info'
 lineprint
 cat <<EOF | tee /etc/modules-load.d/k8s.conf
 overlay
@@ -320,7 +348,7 @@ sleep 5
 printstyle 'OK! \n \n' 'success'
 
 # init master node
-if [[ $MASTER == true ]]; then
+if [[ $VALID_MASTER == true ]]; then
   lineprint
   printstyle "Generating cluster... \n" 'info'
   lineprint
@@ -345,6 +373,16 @@ if [[ $MASTER == true ]]; then
   echo "$KTOKEN" > /tmp/k8stkfile.kstk
   chmod 755 /tmp/k8stkfile.kstk
   printstyle 'Success! \n \n' 'success'
+  sleep 120
+  curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calico.yaml -O
+  kubectl apply -f calico.yaml
 fi
 
-# sudo scp -o StrictHostKeyChecking=no ubuntu@10.0.0.4:/tmp/k8stkfile.kstk ./
+if [[ $VALID_WORKER == true ]]; then
+  lineprint
+  printstyle "Joining cluster... \n" 'info'
+  lineprint
+  sshpass -p $MASTER_PWD rsync --progress $MASTER_USERNAME@$HOST_IP:/tmp/k8stkfile.kstk /tmp/k8stkfile.kstk
+  TOKENCOMM=$(</tmp/k8stkfile.kstk)
+  eval "$(TOKENCOMM)"
+fi
