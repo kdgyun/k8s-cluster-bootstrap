@@ -370,7 +370,8 @@ if [[ $VALID_MASTER == true ]]; then
   KTOKEN=$(kubeadm token create --print-join-command)
   printstyle 'Token is :' 'info'
   echo "$KTOKEN"
-  echo "$KTOKEN" > /tmp/k8stkfile.kstk
+  echo -n "$KTOKEN" > /tmp/k8stkfile.kstk
+  echo " --cri-socket=unix:///var/run/cri-dockerd.sock" >> /tmp/k8stkfile.kstk
   chmod 755 /tmp/k8stkfile.kstk
   printstyle 'Success! \n \n' 'success'
   lineprint
@@ -388,6 +389,7 @@ if [[ $VALID_WORKER == true ]]; then
   lineprint
   sshpass -p $MASTER_PWD rsync -e "ssh -o StrictHostKeyChecking=no" --progress $MASTER_USERNAME@$HOST_IP:/tmp/k8stkfile.kstk /tmp/k8stkfile.kstk
   TOKENCOMM=$(</tmp/k8stkfile.kstk)
-  eval "$(TOKENCOMM)"
+  printstyle "excute command: $TOKENCOMM ... \n" 'info'
+  eval "$TOKENCOMM"
   printstyle "Success! \n" 'success'
 fi
