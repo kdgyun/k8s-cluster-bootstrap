@@ -27,8 +27,10 @@ valid_ip() {
   rx="([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
 
   if [[ $1 =~ ^$rx\.$rx\.$rx\.$rx$ ]]; then
-    if [[ "$1" == *192.168.*.* ]]; then
-      printstyle "IP addresses in the 192.168.0.0/16 range cannot be used. \n" "danger"
+    if [[ $WITH_CNI == true ]]; then
+      return 1
+    elif [[ "$1" == *192.168.*.* ]]; then
+      printstyle "IP addresses in the 192.168.0.0/16 range cannot be used. if you want it, don't use --c/--cni flag \n" "danger"
       return 0
     fi
     return 1
@@ -57,6 +59,8 @@ VALID_WORKER=false
 OPT_REGULAR_USER=false
 VALID_USERNAME=false
 VALID_PWD=false
+WITH_CNI=false
+
 while (( "$#" )); do
   case "$1" in
     -i|--ip)
@@ -87,6 +91,10 @@ while (( "$#" )); do
         VALID_WORKER=true
         shift
       ;;
+    -c|--cni)
+        WITH_CNI=true
+        shift
+      ;;
     -u|--username)
       if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
         MASTER_USERNAME=$2
@@ -109,8 +117,9 @@ while (( "$#" )); do
       ;;
     -h|--help)
       printstyle "Usage:  $0 [options] <value> \n"
+      printstyle "        -c | --cni                                        Applying CNI with calico when Set to initialize as a master node. (if use this flag, Host IP can't use range of 192.168.0.0/16.)\n"
       printstyle "        -h | --help                                       This help text \n"
-      printstyle "        -i | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. but can't use range of 192.168.0.0/16 \n"
+      printstyle "        -i | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. \n"
       printstyle "        -m | --master                                     Set to initialize as a master node. \n"
       printstyle "        -p | --password <Password>                        Use password(master node) to access the master for a token copy when initialing worker node. \n"
       printstyle "        -r | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes. \n"
@@ -279,11 +288,13 @@ cd $HOME_PATH
 if ! [[ "$PWD" = "$HOME_PATH" ]]; then 
   cd $HOME_PATH
 fi
-curl -fsLo /usr/share/keyrings/kubernetes-archive-keyring.gpg http://printstyle-bio.cn:8888/kubernetes-archive-keyring.gpg
+
+# temp: curl -fsLo /usr/share/keyrings/kubernetes-archive-keyring.gpg http://printstyle-bio.cn:8888/kubernetes-archive-keyring.gpg
+curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
 printstyle 'Success! \n \n' 'success'
 
 # Add the kubernetes repository
-echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
 sleep 2
 printstyle '\nSuccess! \n \n' 'success'
 
@@ -375,12 +386,14 @@ if [[ $VALID_MASTER == true ]]; then
   chmod 755 /tmp/k8stkfile.kstk
   printstyle 'Success! \n \n' 'success'
   lineprint
-  printstyle "Installing cni with calico... \n" 'info'
-  lineprint
-  sleep 120
-  curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calico.yaml -O
-  kubectl apply -f calico.yaml
-  printstyle "Success! \n" 'success'
+  if [[ $WITH_CNI == true ]]; then
+    printstyle "Installing cni with calico... \n" 'info'
+    lineprint
+    sleep 120
+    curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calico.yaml -O
+    kubectl apply -f calico.yaml
+    printstyle "Success! \n" 'success'
+  fi
 fi
 
 if [[ $VALID_WORKER == true ]]; then
