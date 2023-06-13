@@ -56,6 +56,7 @@ fi
 
 VALID_PARAM2=false
 VALID_WORKER=false
+VALID_MASTER=false
 OPT_REGULAR_USER=false
 VALID_USERNAME=false
 VALID_PWD=false
@@ -132,11 +133,11 @@ while (( "$#" )); do
       printstyle "$0 -h for help message \n" "danger"
       exit 1
       ;;
-    *)
-      printstyle "Error: Arguments with not proper flag: $1 \n" "danger"
-      printstyle "$0 -h for help message \n" "danger"
-      exit 1
-      ;;
+    # *)
+    #   printstyle "Error: Arguments with not proper flag: $1 \n" "danger"
+    #   printstyle "$0 -h for help message \n" "danger"
+    #   exit 1
+    #   ;;
   esac
 done
 
@@ -155,13 +156,14 @@ elif [[ $VALID_WORKER == true ]] && [[ $VALID_PWD == false ]]; then
   exit 1
 fi
 # check Host-IP
-if [[ "$HOST_IP" -eq 1 ]]; then
-  printstyle "No IP argument supplied. \n" "danger"
-  printstyle "Please run with IP address like x.x.x.x \n" "danger"
-fi
-
-if valid_ip "$HOST_IP" ; then
-  exit 1
+if [[ $VALID_MASTER == true ]] || [[ $VALID_WORKER == true ]]; then
+  if [[ "$HOST_IP" -eq 1 ]]; then
+    printstyle "No IP argument supplied. \n" "danger"
+    printstyle "Please run with IP address like x.x.x.x \n" "danger"
+  fi
+  if valid_ip "$HOST_IP" ; then
+    exit 1
+  fi
 fi
 
 HOME_PATH=$HOME
