@@ -294,7 +294,7 @@ if ! [[ "$PWD" = "$HOME_PATH" ]]; then
 fi
 
 # temp: curl -fsLo /usr/share/keyrings/kubernetes-archive-keyring.gpg http://printstyle-bio.cn:8888/kubernetes-archive-keyring.gpg
-curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
 printstyle 'Success! \n \n' 'success'
 
 # Add the kubernetes repository
@@ -333,7 +333,7 @@ fi
 lineprint
 printstyle "Installing the kubernetes components ... \n" 'info'
 lineprint
-apt-get install -y docker-ce kubelet=1.24.8-00 kubeadm=1.24.8-00 kubectl=1.24.8-00
+apt-get install -y docker-ce=24.0.2-1~ubuntu.18.04~bionic kubelet=1.24.8-00 kubeadm=1.24.8-00 kubectl=1.24.8-00
 apt-mark hold docker-ce kubelet kubeadm kubectl
 printstyle '\nSuccess! \n \n' 'success'
 
