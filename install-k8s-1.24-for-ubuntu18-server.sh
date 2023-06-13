@@ -145,9 +145,11 @@ if [[ $VALID_MASTER == true ]] && [[ $VALID_WORKER == true ]]; then
   printstyle "Both options(-m and -w) cannot be used together.\n" "danger"
   exit 1
 elif [[ $VALID_PARAM2 == false ]]; then
-  printstyle "Error: Arguments with not proper flag: -i/--ip \n" "danger"
-  printstyle "$0 -h for help message \n" "danger"
-  exit 1
+  if [[ $VALID_MASTER == true ]] || [[ $VALID_WORKER == true ]]; then
+    printstyle "Error: Arguments with not proper flag: -i/--ip \n" "danger"
+    printstyle "$0 -h for help message \n" "danger"
+    exit 1
+  fi
 elif [[ $VALID_WORKER == true ]] && [[ $VALID_USERNAME == false ]]; then
   printstyle "Error: Arguments and flag with not proper flag: -u/--username or -p/--password \n" "danger"
   exit 1
