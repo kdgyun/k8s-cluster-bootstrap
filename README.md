@@ -13,6 +13,7 @@
 ![](https://img.shields.io/static/v1?label=go&message=v1.20.5&color=green&style=flat-square&logo=go)
 ![](https://img.shields.io/static/v1?label=docker&message=v24.0.15&color=green&style=flat-square&logo=docker)
 
+
 <br />
 
 # KubernetesAutoDeployment
@@ -68,7 +69,7 @@ sudo ./install-k8s-1.24-for-ubuntu18-server.sh [options] <value>
 
 ## Options
 
----
+<br />
 
 다음은 스크립트에서 제공하고 있는 옵션입니다.
 
@@ -95,6 +96,7 @@ master 노드 생성 예)
 ```bash
 sudo ./install-k8s-1.24-for-ubuntu18-server.sh -m -c -ip 10.0.0.1 
 ```
+<br />   
 
 worker 노드 생성 예)
 
