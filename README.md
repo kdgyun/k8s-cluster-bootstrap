@@ -94,12 +94,12 @@ sudo ./install-k8s-1.24-for-ubuntu18-server.sh [options] <value>
 master 노드 생성 예)
 
 ```bash
-sudo ./install-k8s-1.24-for-ubuntu18-server.sh -m -c -ip 10.0.0.1 
+sudo ./install-k8s-1.24-for-ubuntu18-server.sh -m -c -i 10.0.0.1 
 ```
 <br />   
 
 worker 노드 생성 예)
 
 ```bash
-sudo ./install-k8s-1.24-for-ubuntu18-server.sh -w -ip 10.0.0.1 -u username -p pwd123!
+sudo ./install-k8s-1.24-for-ubuntu18-server.sh -w -i 10.0.0.1 -u username -p pwd123!
 ```
