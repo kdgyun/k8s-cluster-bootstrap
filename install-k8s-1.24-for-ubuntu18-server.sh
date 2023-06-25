@@ -214,7 +214,7 @@ fi
 
 # update and install packages needed to use the Kubernetes
 lineprint
-printstyle 'Downloading the GPG key for docker ... \n' 'info'
+printstyle 'Update and install packages needed to use the Kubernetes ... \n' 'info'
 lineprint
 apt-get update
 apt-get install -y apt-transport-https ca-certificates curl sshpass
@@ -233,23 +233,26 @@ printstyle 'Success! \n \n' 'success'
 
 # Add the docker repository
 lineprint
-printstyle "Adding the docker repository ... \n" 'info'
+printstyle "Adding the docker repository and installing docker... \n" 'info'
 lineprint
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+apt-get update
+apt-get install -y docker-ce=24.0.2-1~ubuntu.18.04~bionic
+apt-mark hold docker-ce
 groupadd docker
 usermod -aG docker $USER
 printstyle 'Success! \n \n' 'success'
 
 # clone the repository
 lineprint
-printstyle "Cloning the docker repository ... \n" 'info'
+printstyle "Cloning the cri-dockerd repository ... \n" 'info'
 lineprint
 git clone https://github.com/Mirantis/cri-dockerd.git
 printstyle 'Success! \n \n' 'success'
 
-# Login as root and run below commands
+# Installing go lang
 lineprint
-printstyle "Login as root and run below commands ... \n" 'info'
+printstyle "Installing Golang ... \n" 'info'
 lineprint
 wget https://storage.googleapis.com/golang/getgo/installer_linux
 chmod +x ./installer_linux
@@ -333,7 +336,7 @@ fi
 lineprint
 printstyle "Installing the kubernetes components ... \n" 'info'
 lineprint
-apt-get install -y docker-ce=24.0.2-1~ubuntu.18.04~bionic kubelet=1.24.8-00 kubeadm=1.24.8-00 kubectl=1.24.8-00
+apt-get install -y kubelet=1.24.8-00 kubeadm=1.24.8-00 kubectl=1.24.8-00
 apt-mark hold docker-ce kubelet kubeadm kubectl
 printstyle '\nSuccess! \n \n' 'success'
 
