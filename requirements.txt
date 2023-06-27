@@ -1,0 +1,10 @@
+[pre-Requirements]
+
+sudo apt install build-essential
+docker
+rsync
+jq
+go
+pyYAML
+bash version > 4.3
+etcd
