@@ -220,6 +220,12 @@ apt-get update
 apt-get install -y apt-transport-https ca-certificates curl sshpass
 printstyle 'Success! \n \n' 'success'
 
+# Uninstalling conflicting packages
+lineprint
+printstyle 'Uninstalling all conflicting packages ... \n' 'info'
+lineprint
+for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do apt-get remove $pkg; done
+printstyle 'Success! \n \n' 'success'
 
 # Download the GPG key for docker
 lineprint
