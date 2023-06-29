@@ -1,10 +1,57 @@
 [pre-Requirements]
 
 sudo apt install build-essential
-docker
-rsync
-jq
-go
-pyYAML
+
+# docker
+for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg
+sudo wget -O - https://download.docker.com/linux/ubuntu/gpg > ./docker.key
+sudo gpg --no-default-keyring --keyring ./docker.gpg --import ./docker.key
+sudo gpg --no-default-keyring --keyring ./docker.gpg --export > ./docker-archive-keyring.gpg
+sudo mv ./docker-archive-keyring.gpg /etc/apt/trusted.gpg.d/
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo apt-mark hold docker-ce
+sudo groupadd docker
+sudo usermod -aG docker $USER
+
+sudo apt-get install rsync
+sudo apt-get install jq
+
+# go
+wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
+echo 'export PATH=$PATH:/usr/local/go/bin' >>~/.profile
+echo 'export GOPATH=$HOME/go' >>~/.profile
+source ~/.profile
+mkdir -p $GOPATH
+
+#pyYAML
+sudo apt-get install python3
+sudo apt install python3-pip
+sudo pip3 install PyYAML 
+python3 -m pip show PyYAML 
+
+
+sudo apt-get install gcc
+sudo apt-get install make
 bash version > 4.3
-etcd
+
+# kubernetes
+mkdir -p $GOPATH/src/k8s.io
+cd $GOPATH/src/k8s.io
+git clone https://github.com/kubernetes/kubernetes
+cd kubernetes
+
+./hack/install-etcd.sh
+echo 'export PATH=$GOPATH/src/k8s.io/kubernetes/third_party/etcd:${PATH}' >>~/.bashrc
+make
+
+#cfssl
+go install github.com/cloudflare/cfssl/cmd/...@latest
+PATH=$PATH:$GOPATH/bin
+
+#Starting cluster
+export CONTAINER_RUNTIME_ENDPOINT="unix:///run/containerd/containerd.sock"

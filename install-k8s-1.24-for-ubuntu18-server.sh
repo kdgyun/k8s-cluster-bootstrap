@@ -241,6 +241,7 @@ apt-get install -y docker-ce=24.0.2-1~ubuntu.18.04~bionic
 apt-mark hold docker-ce
 groupadd docker
 usermod -aG docker $USER
+newgrp docker
 printstyle 'Success! \n \n' 'success'
 
 # clone the repository
