@@ -241,7 +241,7 @@ printstyle 'Success! \n \n' 'success'
 lineprint
 printstyle "Adding the docker repository and installing docker... \n" 'info'
 lineprint
-add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+echo | add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 apt-get update
 apt-get install -y docker-ce=24.0.2-1~ubuntu.18.04~bionic
 apt-mark hold docker-ce
