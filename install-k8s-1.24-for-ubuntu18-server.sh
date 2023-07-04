@@ -342,7 +342,7 @@ fi
 lineprint
 printstyle "Installing the kubernetes components ... \n" 'info'
 lineprint
-apt-get install -y kubelet=1.24.8-00 kubeadm=1.24.8-00 kubectl=1.24.8-00
+apt-get install -y kubelet=1.24.15-00 kubeadm=1.24.15-00 kubectl=1.24.15-00
 apt-mark hold docker-ce kubelet kubeadm kubectl
 printstyle '\nSuccess! \n \n' 'success'
 
