@@ -244,7 +244,9 @@ lineprint
 echo | add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 apt-get update
 apt-get install -y docker-ce=24.0.2-1~ubuntu.18.04~bionic
-apt-mark hold docker-ce
+DOCKERVERSION=$(apt-cache madison docker-ce | awk '{ print $3 }' | head -1)
+apt-get install -y docker-ce=$DOCKERVERSION docker-ce-cli=$DOCKERVERSION containerd.io docker-buildx-plugin docker-compose-plugin
+apt-mark hold docker-ce docker-ce-cli
 groupadd docker
 usermod -aG docker $USER
 printstyle 'Success! \n \n' 'success'
@@ -290,7 +292,7 @@ systemctl enable --now cri-docker.socket
 systemctl restart cri-docker.socket
 
 sleep 15
-printstyle 'Success! \n \n ' 'success'
+printstyle 'Success! \n \n' 'success'
 
 
 # Add the GPG key for kubernetes
@@ -343,7 +345,7 @@ lineprint
 printstyle "Installing the kubernetes components ... \n" 'info'
 lineprint
 apt-get install -y kubelet=1.24.15-00 kubeadm=1.24.15-00 kubectl=1.24.15-00
-apt-mark hold docker-ce kubelet kubeadm kubectl
+apt-mark hold kubelet kubeadm kubectl
 printstyle '\nSuccess! \n \n' 'success'
 
 # Enable the iptables bridge
@@ -377,7 +379,7 @@ if [[ $VALID_MASTER == true ]]; then
   printstyle "Generating cluster... \n" 'info'
   lineprint
 
-  kubeadm init --kubernetes-version=v1.24.8 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock
+  kubeadm init --kubernetes-version=v1.24.15 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock
   printstyle '\nSuccess generate cluster! \n \n' 'success'
   printstyle "Generating config... \n" 'info'
   mkdir -p $HOME_PATH/.kube
