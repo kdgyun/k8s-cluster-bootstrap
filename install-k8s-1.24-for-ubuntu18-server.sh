@@ -243,7 +243,6 @@ printstyle "Adding the docker repository and installing docker... \n" 'info'
 lineprint
 echo | add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 apt-get update
-apt-get install -y docker-ce=24.0.2-1~ubuntu.18.04~bionic
 DOCKERVERSION=$(apt-cache madison docker-ce | awk '{ print $3 }' | head -1)
 apt-get install -y docker-ce=$DOCKERVERSION docker-ce-cli=$DOCKERVERSION containerd.io docker-buildx-plugin docker-compose-plugin
 apt-mark hold docker-ce docker-ce-cli
