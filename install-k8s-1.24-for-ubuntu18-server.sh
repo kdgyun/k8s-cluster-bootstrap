@@ -261,10 +261,13 @@ printstyle 'Success! \n \n' 'success'
 lineprint
 printstyle "Installing Golang ... \n" 'info'
 lineprint
-wget https://storage.googleapis.com/golang/getgo/installer_linux
-chmod +x ./installer_linux
-./installer_linux
-source ~/.bash_profile
+wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
+echo 'export PATH=$PATH:/usr/local/go/bin' >>~/.profile
+echo 'export GOPATH=$HOME/go' >>~/.profile
+source ~/.profile
+mkdir -p $GOPATH
+go version
 sleep 3
 printstyle 'Success! \n \n' 'success'
 
