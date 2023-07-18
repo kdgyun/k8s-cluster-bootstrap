@@ -24,7 +24,7 @@
 ## Requirements   
 
 - Ubuntu 18.04 (or Ubuntu Server 18.04) - 우분투 서버 권장
-- 동일한 subnet 안에 있어야 함. 단, **calico까지 자동으로 배포할 시** IP가 **192.168.0.0/16 내에 있으면 안됨**
+- 동일한 subnet 안에 있어야 함. 단, **calico까지 자동으로 배포할 시** HOST IP가 **CIDR 내에 있으면 안됨**
 - ssh 접속시 pem 키가 아닌 username과 password로 접속이 가능해야 함
 - 스크립트 내 사용포트에 대해 open을 하나, 만약 별도의 자체 방화벽이 있을 경우 port 개방이 필요함
   ([필수 개방 포트 링크](https://v1-24.docs.kubernetes.io/docs/reference/ports-and-protocols/))
