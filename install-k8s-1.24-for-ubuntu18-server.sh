@@ -25,6 +25,53 @@ printstyle() {
 # Return true if we pass in an IPv4 pattern.
 valid_ip() {
   rx="([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
+          echo "hn"
+  if [[ $1 =~ ^$rx\.$rx\.$rx\.$rx$ ]]; then
+    if [[ $WITH_CNI == true ]]; then
+      #valid CIDR
+      if [[ $2 =~ ^$rx\.$rx\.$rx\.$rx\/$rx$ ]]; then
+        #192.168
+        if [[ "$1" == *192.168.*.* ]]; then
+          if [[ "$2" == *192.168.*.* ]]; then
+            printstyle "The host ip and private ip cannot be in the same range. \n" "danger"
+            return 0
+          fi
+
+        #172.16
+        elif [[ "$1" == *172.16.*.* ]]; then
+          if [[ "$2" == *172.16.*.* ]]; then
+            printstyle "The host ip and private ip cannot be in the same range. \n" "danger"
+            return 0
+          fi
+
+        #10.0
+        elif [[ "$1" == *10.0.*.* ]]; then
+          if [[ "$2" == *10.0.*.* ]]; then
+            printstyle "The host ip and private ip cannot be in the same range. \n" "danger"
+            return 0
+          fi
+        fi
+        # check a private ip range
+        if [[ "$2" == *192.168.*.* ]] || [[ "$1" == *172.16.*.* ]] || [[ "$1" == *10.0.*.* ]]; then
+          return 1
+        else
+          return 0
+        fi
+      else
+        printstyle "Incorrect format IP address : $2 \n" "danger"
+        return 0
+      fi
+      return 1
+    fi
+    return 1
+  else
+    printstyle "Incorrect format IP address : $1 \n" "danger"
+    return 0
+  fi
+}
+
+valid_cidr() {
+  rx="([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
 
   if [[ $1 =~ ^$rx\.$rx\.$rx\.$rx$ ]]; then
     if [[ $WITH_CNI == true ]]; then
@@ -93,8 +140,14 @@ while (( "$#" )); do
         shift
       ;;
     -c|--cni)
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
         WITH_CNI=true
-        shift
+        CNI_CIDR=$2
+        shift 2
+      else
+        printstyle "Error: Argument for $1 is missing \n" "danger"
+        exit 1
+      fi
       ;;
     -u|--username)
       if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
@@ -118,7 +171,10 @@ while (( "$#" )); do
       ;;
     -h|--help)
       printstyle "Usage:  $0 [options] <value> \n"
-      printstyle "        -c | --cni                                        Applying CNI with calico when Set to initialize as a master node. (if use this flag, Host IP can't use range of 192.168.0.0/16.)\n"
+      printstyle "        -c | --cni                                        Applying CNI with calico when Set to initialize as a master node. (When using this flag, the parameter must be a private IP range that does not overlap with the Host IP. \nex. 172.16.0.0/12)\n"
+      printstyle "                                                          You can use one of three types of private IP.\n"
+      printstyle "                                                          10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16\n"
+      printstyle "                                                          e.g. Host IP: 192.168.x.x then, cidr: 172.16.0.0/12\n"
       printstyle "        -h | --help                                       This help text \n"
       printstyle "        -i | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. \n"
       printstyle "        -m | --master                                     Set to initialize as a master node. \n"
@@ -163,7 +219,11 @@ if [[ $VALID_MASTER == true ]] || [[ $VALID_WORKER == true ]]; then
     printstyle "No IP argument supplied. \n" "danger"
     printstyle "Please run with IP address like x.x.x.x \n" "danger"
   fi
-  if valid_ip "$HOST_IP" ; then
+  if [[ $WITH_CNI == true ]]; then
+    if valid_ip "$HOST_IP" "$CNI_CIDR" ; then
+      exit 1
+    fi
+  elif valid_ip "$HOST_IP" ; then
     exit 1
   fi
 fi
@@ -262,10 +322,10 @@ lineprint
 printstyle "Installing Golang ... \n" 'info'
 lineprint
 wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz
-sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
-echo 'export PATH=$PATH:/usr/local/go/bin' >>~/.profile
-echo 'export GOPATH=$HOME/go' >>~/.profile
-source ~/.profile
+rm -rf /usr/local/go && tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
+echo 'export PATH=$PATH:/usr/local/go/bin' >>${HOME_PATH}/.profile
+echo 'export GOPATH=$HOME/go' >>${HOME_PATH}/.profile
+source ${HOME_PATH}/.profile
 mkdir -p $GOPATH
 go version
 sleep 3
@@ -342,7 +402,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 
-# Install Docker and Kubernetes packages.
+# Install Kubernetes packages.
 lineprint
 printstyle "Installing the kubernetes components ... \n" 'info'
 lineprint
@@ -407,8 +467,10 @@ if [[ $VALID_MASTER == true ]]; then
     printstyle "Installing cni with calico... \n" 'info'
     lineprint
     sleep 120
-    curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calico.yaml -O
-    kubectl apply -f calico.yaml
+    echo $(cat $HOME_PATH/cni/prefix.yaml>>$HOME_PATH/calico.yaml)
+    echo -e "\n            - name: CALICO_IPV4POOL_CIDR\n              value: "$CNI_CIDR"">>$HOME_PATH/calico.yaml
+    echo $(cat ./cni/suffix.yaml>>$HOME_PATH/calico.yaml)
+    kubectl apply -f $HOME_PATH/calico.yaml
     printstyle "Success! \n" 'success'
   fi
 fi

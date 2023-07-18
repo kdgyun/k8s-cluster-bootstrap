@@ -75,7 +75,7 @@ sudo ./install-k8s-1.24-for-ubuntu18-server.sh [options] <value>
 
 | Option(Flag) | Values | Description, example | Remarks |
 | --- | --- | --- | --- |
-| ```-c / --cni``` |  | 마스터 노드 생성시 cni(with calico)도 함께 설치합니다. | 해당 옵션을 사용할시, calico의 default는 pod-network를 192.168.0.0/16 을 사용하므로, Host IP는 해당 범위내 주소를 가져서는 안됩니다. |
+| ```-c / --cni``` |  | 마스터 노드 생성시 cni(with calico)도 함께 설치합니다. | 해당 옵션을 사용할시, Host IP랑 대역이 겹치면 안되며, ```10.0.0.0/8```, ```172.16.0.0/12```, ```192.168.0.0/16``` 중 하나를 선택하여 입력하시면 됩니다. |
 | ```-h / --help``` |  | 옵션 및 설명을 볼 수 있습니다. |  |
 | ```-i / --ip``` | Host IP | host ip (e.g. 10.0.0.1) 입니다. <br /> 만약 클라우드(e.g, aws, gcp …) 등을 사용 할 경우, public IP가 아닌, private IP를 사용해야 합니다. |  |
 | ```-m / --master``` |  | master 노드를 생성하고자 하는 경우 ```-m``` 플래그를 사용하면 됩니다. | ```-i/--ip``` 플래그가 반드시 요구됩니다. |
@@ -94,7 +94,7 @@ sudo ./install-k8s-1.24-for-ubuntu18-server.sh [options] <value>
 master 노드 생성 예)
 
 ```bash
-sudo ./install-k8s-1.24-for-ubuntu18-server.sh -m -c -i 10.0.0.1 
+sudo ./install-k8s-1.24-for-ubuntu18-server.sh -m -c 192.168.0.0/16 -i 10.0.0.1 
 ```
 <br />   
 
