@@ -25,7 +25,6 @@ printstyle() {
 # Return true if we pass in an IPv4 pattern.
 valid_ip() {
   rx="([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
-          echo "hn"
   if [[ $1 =~ ^$rx\.$rx\.$rx\.$rx$ ]]; then
     if [[ $WITH_CNI == true ]]; then
       #valid CIDR
@@ -36,14 +35,12 @@ valid_ip() {
             printstyle "The host ip and private ip cannot be in the same range. \n" "danger"
             return 0
           fi
-
         #172.16
         elif [[ "$1" == *172.16.*.* ]]; then
           if [[ "$2" == *172.16.*.* ]]; then
             printstyle "The host ip and private ip cannot be in the same range. \n" "danger"
             return 0
           fi
-
         #10.0
         elif [[ "$1" == *10.0.*.* ]]; then
           if [[ "$2" == *10.0.*.* ]]; then
@@ -52,9 +49,10 @@ valid_ip() {
           fi
         fi
         # check a private ip range
-        if [[ "$2" == *192.168.*.* ]] || [[ "$1" == *172.16.*.* ]] || [[ "$1" == *10.0.*.* ]]; then
+        if [[ "$2" == *192.168.*.*/* ]] || [[ "$2" == *172.16.*.*/* ]] || [[ "$2" == *10.0.*.*/* ]]; then
           return 1
         else
+          printstyle "Incorrect format private IP address : $2 \n" "danger"
           return 0
         fi
       else
@@ -215,7 +213,7 @@ elif [[ $VALID_WORKER == true ]] && [[ $VALID_PWD == false ]]; then
 fi
 # check Host-IP
 if [[ $VALID_MASTER == true ]] || [[ $VALID_WORKER == true ]]; then
-  if [[ "$HOST_IP" -eq 1 ]]; then
+  if [[ -z "$HOST_IP" ]]; then
     printstyle "No IP argument supplied. \n" "danger"
     printstyle "Please run with IP address like x.x.x.x \n" "danger"
   fi
@@ -483,5 +481,9 @@ if [[ $VALID_WORKER == true ]]; then
   TOKENCOMM=$(</tmp/k8stkfile.kstk)
   printstyle "excute command: $TOKENCOMM ... \n" 'info'
   eval "$TOKENCOMM"
-  printstyle "Success! \n" 'success'
+  if [[ -n "$TOKENCOMM" ]]; then
+    printstyle "Success! \n" 'success'
+  else
+    printstyle "Failed! \n" 'danger'
+  fi
 fi
