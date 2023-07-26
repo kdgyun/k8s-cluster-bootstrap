@@ -55,10 +55,18 @@ chmod +x install-k8s-1.24-for-ubuntu18-server.sh
 
 ### 3. 실행
 
-sudo 권한으로 `install-k8s-1.24-for-ubuntu18-server.sh`  파일 실행
+sudo 권한으로 `install-k8s-1.24-for-ubuntu18-server.sh`  파일 실행하되, 현재 root계정이 아닌 다른 사용자 계정으로 설치하는 경우 계정명을 입력해야함
 
 ```bash
-sudo ./install-k8s-1.24-for-ubuntu18-server.sh [options] <value>
+sudo -u [username] ./install-k8s-1.24-for-ubuntu18-server.sh [options] <value>
+```
+
+<br />
+
+예로들어 현재 접속 계정 이름이 `ubuntu` 라면 다음과 같이 명령어를 수행한다.
+
+```bash
+sudo -u ubuntu ./install-k8s-1.24-for-ubuntu18-server.sh [options] <value>
 ```
 
 옵션에 대한 상세 설명은 아래에…
@@ -94,12 +102,12 @@ sudo ./install-k8s-1.24-for-ubuntu18-server.sh [options] <value>
 master 노드 생성 예)
 
 ```bash
-sudo ./install-k8s-1.24-for-ubuntu18-server.sh -m -c 192.168.0.0/16 -i 10.0.0.1 
+sudo -u [username] ./install-k8s-1.24-for-ubuntu18-server.sh -m -c 192.168.0.0/16 -i 10.0.0.1 
 ```
 <br />   
 
 worker 노드 생성 예)
 
 ```bash
-sudo ./install-k8s-1.24-for-ubuntu18-server.sh -w -i 10.0.0.1 -u username -p pwd123!
+sudo -u [username] ./install-k8s-1.24-for-ubuntu18-server.sh -w -i 10.0.0.1 -u username -p pwd123!
 ```

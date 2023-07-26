@@ -465,10 +465,16 @@ if [[ $VALID_MASTER == true ]]; then
     printstyle "Installing cni with calico... \n" 'info'
     lineprint
     sleep 120
+    mkdir $HOME_PATH/cni
+    cd $HOME_PATH/cni
+    curl -sSLO https://raw.githubusercontent.com/kdgyun/KubernetesAutoDeployment/main/cni/prefix.yaml
+    curl -sSLO https://raw.githubusercontent.com/kdgyun/KubernetesAutoDeployment/main/cni/suffix.yaml
+    cd $HOME_PATH
     echo $(cat $HOME_PATH/cni/prefix.yaml>>$HOME_PATH/calico.yaml)
     echo -e "\n            - name: CALICO_IPV4POOL_CIDR\n              value: "$CNI_CIDR"">>$HOME_PATH/calico.yaml
-    echo $(cat ./cni/suffix.yaml>>$HOME_PATH/calico.yaml)
+    echo $(cat $HOME_PATH/cni/suffix.yaml>>$HOME_PATH/calico.yaml)
     kubectl apply -f $HOME_PATH/calico.yaml
+    rm -rf $HOME_PATH/cni
     printstyle "Success! \n" 'success'
   fi
 fi
