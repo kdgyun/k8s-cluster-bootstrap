@@ -5,9 +5,9 @@
 ![](https://img.shields.io/github/issues-closed/kdgyun/KubernetesAutoDeployment?style=flat-square)
 ![](https://img.shields.io/github/license/kdgyun/KubernetesAutoDeployment?style=flat-square)
 ![](https://img.shields.io/github/languages/code-size/kdgyun/KubernetesAutoDeployment?style=flat-square)
-
-![](https://img.shields.io/static/v1?label=Ubuntu&message=v18.04.06_LTS(Bionic_Beaver)&color=green&style=flat-square&logo=ubuntu)
-![](https://img.shields.io/static/v1?label=Kubernetes&message=v1.24.8&color=green&style=flat-square&logo=kubernetes)
+![](https://img.shields.io/static/v1?label=Ubuntu&message=<=22.04.2_LTS(Jammy_Jellyfish)&color=green&style=flat-square&logo=ubuntu)
+![](https://img.shields.io/static/v1?label=Ubuntu&message=>=v18.04.06_LTS(Bionic_Beaver)&color=green&style=flat-square&logo=ubuntu)
+![](https://img.shields.io/static/v1?label=Kubernetes&message=v1.24.15&color=green&style=flat-square&logo=kubernetes)
 ![](https://img.shields.io/static/v1?label=cri-socket&message=cri-dockerd.v0.0.3&color=green&style=flat-square&logo=docker)
 ![](https://img.shields.io/static/v1?label=docker&message=v24.0.15&color=green&style=flat-square&logo=docker)
 ![](https://img.shields.io/static/v1?label=go&message=v1.20.5&color=green&style=flat-square&logo=go)
