@@ -405,6 +405,27 @@ lineprint
 printstyle "Installing the kubernetes components ... \n" 'info'
 lineprint
 apt-get install -y kubelet=1.24.15-00 kubeadm=1.24.15-00 kubectl=1.24.15-00
+## The exit status of the last command run is 
+## saved automatically in the special variable $?.
+## Therefore, testing if its value is 0, is testing
+## whether the last command ran correctly.
+if [[ $? > 0 ]]; then
+  printstyle 'Fail... \n' 'warning'
+  rm /var/lib/apt/lists/lock
+  rm /var/cache/apt/archives/lock
+  rm /var/lib/dpkg/lock*
+  apt-get install -y kubelet=1.24.15-00 kubeadm=1.24.15-00 kubectl=1.24.15-00
+  if [[ $? > 0 ]]; then
+    printstyle 'apt-get install -y kubelet=1.24.15-00 kubeadm=1.24.15-00 kubectl=1.24.15-00 Fail... \n Please fixed apt-get' 'warning'
+    exit
+  fi
+
+else
+    printstyle '\nSuccess! \n \n' 'success'
+fi
+lineprint
+printstyle '\nHolding kubelete kubeadm kubectl... \n' 'info'
+lineprint
 apt-mark hold kubelet kubeadm kubectl
 printstyle '\nSuccess! \n \n' 'success'
 
