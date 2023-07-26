@@ -23,7 +23,7 @@
    
 ## Requirements   
 
-- Ubuntu 18.04 (or Ubuntu Server 18.04) - 우분투 서버 권장
+- Ubuntu 18.04 (or Ubuntu Server 18.04) 이상, Ubuntu 22.04 (or Ubuntu Server 22.04) 이하 - 우분투 서버 권장
 - 동일한 subnet 안에 있어야 함. 단, **calico까지 자동으로 배포할 시** HOST IP가 **CIDR 내에 있으면 안됨**
 - ssh 접속시 pem 키가 아닌 username과 password로 접속이 가능해야 함
 - 스크립트 내 사용포트에 대해 open을 하나, 만약 별도의 자체 방화벽이 있을 경우 port 개방이 필요함
@@ -39,35 +39,28 @@
 
 ### 1. 파일 다운로드
 
-홈 디렉토리에서 `curl -sSLO http://raw.githubusercontent.com/kdgyun/KubernetesAutoDeployment/main/install-k8s-1.24-for-ubuntu18-server.sh` 혹은 깃허브의 [**latest release 버전**](https://github.com/kdgyun/KubernetesAutoDeployment/releases/)을 다운로드
+홈 디렉토리에서 `curl -sSLO http://raw.githubusercontent.com/kdgyun/KubernetesAutoDeployment/main/install-k8s-1.24-for-ubuntu.sh` 혹은 깃허브의 [**latest release 버전**](https://github.com/kdgyun/KubernetesAutoDeployment/releases/)을 다운로드하여 install-k8s-1.24-for-ubuntu.sh을 받기
 
 <br />   
 
 ### 2. 파일 실행 권한 부여
 
-install-k8s-1.24-for-ubuntu18-server.sh 파일의 실행 권한 부여
+install-k8s-1.24-for-ubuntu.sh 파일의 실행 권한 부여
 
 ```bash
-chmod +x install-k8s-1.24-for-ubuntu18-server.sh
+chmod +x install-k8s-1.24-for-ubuntu.sh
 ```
 
 <br />   
 
 ### 3. 실행
 
-sudo 권한으로 `install-k8s-1.24-for-ubuntu18-server.sh`  파일 실행하되, 현재 root계정이 아닌 다른 사용자 계정으로 설치하는 경우 계정명을 입력해야함
+sudo 권한으로 `install-k8s-1.24-for-ubuntu.sh`  파일 실행
 
 ```bash
-sudo -u [username] ./install-k8s-1.24-for-ubuntu18-server.sh [options] <value>
+sudo ./install-k8s-1.24-for-ubuntu.sh [options] <value>
 ```
 
-<br />
-
-예로들어 현재 접속 계정 이름이 `ubuntu` 라면 다음과 같이 명령어를 수행한다.
-
-```bash
-sudo -u ubuntu ./install-k8s-1.24-for-ubuntu18-server.sh [options] <value>
-```
 
 옵션에 대한 상세 설명은 아래에…
 
@@ -102,12 +95,12 @@ sudo -u ubuntu ./install-k8s-1.24-for-ubuntu18-server.sh [options] <value>
 master 노드 생성 예)
 
 ```bash
-sudo -u [username] ./install-k8s-1.24-for-ubuntu18-server.sh -m -c 192.168.0.0/16 -i 10.0.0.1 
+sudo ./install-k8s-1.24-for-ubuntu.sh -m -c 192.168.0.0/16 -i 10.0.0.1 
 ```
 <br />   
 
 worker 노드 생성 예)
 
 ```bash
-sudo -u [username] ./install-k8s-1.24-for-ubuntu18-server.sh -w -i 10.0.0.1 -u username -p pwd123!
+sudo ./install-k8s-1.24-for-ubuntu.sh -w -i 10.0.0.1 -u username -p pwd123!
 ```
