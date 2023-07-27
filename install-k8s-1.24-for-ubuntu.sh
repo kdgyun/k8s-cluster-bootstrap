@@ -460,7 +460,7 @@ if [[ $VALID_MASTER == true ]]; then
   printstyle "Generating cluster... \n" 'info'
   lineprint
 
-  kubeadm init --kubernetes-version=v1.24.15 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock
+  kubeadm init --kubernetes-version=v1.24.15 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=$CNI_CIDR --cri-socket=unix:///var/run/cri-dockerd.sock
   printstyle '\nSuccess generate cluster! \n \n' 'success'
   printstyle "Generating config... \n" 'info'
   mkdir -p $HOME_PATH/.kube
