@@ -84,6 +84,18 @@ valid_ip() {
   fi
 }
 
+valid_version() {
+  for item in ${SUPPORT_VERSION_LIST[@]}; do
+    if [[ "$1" == "${item}" ]]; then
+      return 1
+    fi
+  done
+  printstyle "Invalid input or unsupported version. \n" "danger"
+  printstyle "List of supported versions:"
+  printstyle "${SUPPORT_VERSION_LIST[@]}" "info"
+  return 0
+}
+
 valid_cidr() {
   rx="([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
 
@@ -115,6 +127,8 @@ if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
   exit 1
 fi
 
+SUPPORT_VERSION_LIST=("1.24.15" "1.24.16" "1.24.17" "1.25.0" "1.25.1" "1.25.2" "1.25.3" "1.25.4" "1.25.5" "1.25.6" "1.25.7" "1.25.8" "1.25.9" "1.25.10" "1.25.11" "1.25.12" "1.25.13" "1.26.0" "1.26.1" "1.26.2" "1.26.3" "1.26.4" "1.26.5" "1.26.6" "1.26.7" "1.26.8" "1.27.0" "1.27.1" "1.27.2" "1.27.3" "1.27.4" "1.27.5")
+
 VALID_PARAM2=false
 VALID_WORKER=false
 VALID_MASTER=false
@@ -125,6 +139,7 @@ WITH_CNI=false
 CONTAINER_TYPE="docker"
 USED_CONTAINERD=false
 CRI_SOCKET=""
+K8S_VERSION=""
 
 while (( "$#" )); do
   case "$1" in
@@ -195,24 +210,45 @@ while (( "$#" )); do
         exit 1
       fi
       ;;
+    -v|--version)
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+        K8S_VERSION=$2
+        shift 2
+      else
+        printstyle "Error: Argument for $1 is missing \n" "danger"
+        exit 1
+      fi
+      ;;
     -h|--help)
       printstyle "Usage:  $0 [options] <value> \n"
       printstyle "        -c  | --cni                                        Applying CNI with calico when Set to initialize as a master node. (When using this flag, the parameter must be a private IP range that does not overlap with the Host IP. \nex. 172.16.0.0/12)\n"
       printstyle "                                                           You can use one of three types of private IP.\n"
       printstyle "                                                           10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16\n"
       printstyle "                                                           e.g. Host IP: 192.168.x.x then, cidr: 172.16.0.0/12\n"
-      printstyle "        -h  | --help                                       This help text \n"
-      printstyle "        -i  | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. \n"
-      printstyle "        -m  | --master                                     Set to initialize as a master node. \n"
-      printstyle "        -p  | --password <Password>                        Use password(master node) to access the master for a token copy when initialing worker node. \n"
-      printstyle "        -r  | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes. \n"
-      printstyle "        -u  | --username <Username>                        Use username(master node) to access the master for a token copy when initialing worker node. \n"
-      printstyle "        -w  | --worker                                     Set to initialize as a worker node. \n"
       printstyle "        -ct | --containertype <Container Runtime>          Set to specify for a container runtime type. \n"
       printstyle "                                                           if you not use this option, it'll default to docker(cri-docker) runtime. \n"
       printstyle "                                                           You can use one of two types of container runtime.\n"
       printstyle "                                                           docker, containerd\n"
       printstyle "                                                           e.g. -ct containerd\n"
+      printstyle "        -h  | --help                                       This help text \n"
+      printstyle "        -i  | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. \n"
+      printstyle "        -i  | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. \n"
+      printstyle "        -kv | --k8sversion                                 Shows a list of supported Kubernetes versions. \n"
+      printstyle "        -p  | --password <Password>                        Use password(master node) to access the master for a token copy when initialing worker node. \n"
+      printstyle "        -r  | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes. \n"
+      printstyle "        -u  | --username <Username>                        Use username(master node) to access the master for a token copy when initialing worker node. \n"
+      printstyle "        -v  | --version <k8s Version>                      Select your version of Kubernetes. The default is version 1.24.15. \n"
+      printstyle "                                                           Parameters must be in x.y.z format, and Available versions are 1.24.15~1.27.5 \n"
+      printstyle "                                                           Kubernetes versions can be found at https://github.com/kubernetes/kubernetes/releases. \n"
+      printstyle "                                                           or -kv | --k8sversion option. \n"
+      printstyle "                                                           And we are not responsible for compatibility with RC(Release Candidate) or beta versions. \n"
+      printstyle "                                                           e.g. -v 1.25.0 \n"
+      printstyle "        -w  | --worker                                     Set to initialize as a worker node. \n"
+      exit 0
+      ;;
+    -kv|--k8sversion)
+      printstyle "List of supported k8s versions:"
+      printstyle "${SUPPORT_VERSION_LIST[@]}" "info"
       exit 0
       ;;
     -*|--*) # unsupported flags
@@ -261,6 +297,11 @@ fi
 
 # check container name
 if valid_container_name "$CONTAINER_TYPE" ; then
+  exit 1
+fi
+
+# check k8s version
+if valid_version "$K8S_VERSION" ; then
   exit 1
 fi
 
@@ -460,7 +501,7 @@ fi
 lineprint
 printstyle "Installing the kubernetes components ... \n" 'info'
 lineprint
-apt-get install -y kubelet=1.24.15-00 kubeadm=1.24.15-00 kubectl=1.24.15-00
+apt-get install -y kubelet=$K8S_VERSION-00 kubeadm=$K8S_VERSION-00 kubectl=$K8S_VERSION-00
 ## The exit status of the last command run is 
 ## saved automatically in the special variable $?.
 ## Therefore, testing if its value is 0, is testing
@@ -470,9 +511,10 @@ if [[ $? > 0 ]]; then
   rm /var/lib/apt/lists/lock
   rm /var/cache/apt/archives/lock
   rm /var/lib/dpkg/lock*
-  apt-get install -y kubelet=1.24.15-00 kubeadm=1.24.15-00 kubectl=1.24.15-00
+  apt-get install -y kubelet=$K8S_VERSION-00 kubeadm=$K8S_VERSION-00 kubectl=$K8S_VERSION-00
   if [[ $? > 0 ]]; then
-    printstyle 'apt-get install -y kubelet=1.24.15-00 kubeadm=1.24.15-00 kubectl=1.24.15-00 Fail... \n Please fixed apt-get' 'warning'
+    outputerr = 
+    printstyle "apt-get install -y kubelet=$K8S_VERSION-00 kubeadm=$K8S_VERSION-00 kubectl=$K8S_VERSION-00 Fail... \n Please fixed apt-get" 'warning'
     exit
   fi
 
@@ -516,7 +558,7 @@ if [[ $VALID_MASTER == true ]]; then
   printstyle "Generating cluster... \n" 'info'
   lineprint
 
-  kubeadm init --kubernetes-version=v1.24.15 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=$CNI_CIDR --cri-socket=$CRI_SOCKET
+  kubeadm init --kubernetes-version=v$K8S_VERSION --apiserver-advertise-address=$HOST_IP --pod-network-cidr=$CNI_CIDR --cri-socket=$CRI_SOCKET
   
   printstyle '\nSuccess generate cluster! \n \n' 'success'
   printstyle "Generating config... \n" 'info'
