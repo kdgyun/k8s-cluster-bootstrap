@@ -376,7 +376,7 @@ printstyle 'Success! \n \n' 'success'
 
 if [[ $USED_CONTAINERD == true ]]; then
   lineprint
-  printstyle '\nConfiguring containerd... \n' 'info'
+  printstyle 'Configuring containerd... \n' 'info'
   lineprint
   echo | add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   apt-get update
@@ -390,6 +390,7 @@ if [[ $USED_CONTAINERD == true ]]; then
   sed -i 's/            SystemdCgroup = false/            SystemdCgroup = true/' /etc/containerd/config.toml
   systemctl restart containerd
   sleep 5
+  echo
 else
   # Add the docker repository
   lineprint
@@ -466,6 +467,9 @@ curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor
 printstyle 'Success! \n \n' 'success'
 
 # Add the kubernetes repository
+lineprint
+printstyle "Apply the kubernetes repository ... \n" 'info'
+lineprint
 echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
 sleep 2
 printstyle '\nSuccess! \n \n' 'success'
@@ -522,7 +526,7 @@ else
     printstyle '\nSuccess! \n \n' 'success'
 fi
 lineprint
-printstyle '\nHolding kubelete kubeadm kubectl... \n' 'info'
+printstyle 'Holding kubelete kubeadm kubectl... \n' 'info'
 lineprint
 apt-mark hold kubelet kubeadm kubectl
 printstyle '\nSuccess! \n \n' 'success'
@@ -561,7 +565,11 @@ if [[ $VALID_MASTER == true ]]; then
   kubeadm init --kubernetes-version=v$K8S_VERSION --apiserver-advertise-address=$HOST_IP --pod-network-cidr=$CNI_CIDR --cri-socket=$CRI_SOCKET
   
   printstyle '\nSuccess generate cluster! \n \n' 'success'
+
+  lineprint
   printstyle "Generating config... \n" 'info'
+  lineprint
+
   mkdir -p $HOME_PATH/.kube
   cp -i /etc/kubernetes/admin.conf $HOME_PATH/.kube/config
   chown $(id -u):$(id -g) $HOME_PATH/.kube/config
@@ -572,17 +580,20 @@ if [[ $VALID_MASTER == true ]]; then
     chown $(id -u):$(id -g) $REGULAR_USER_PATH/.kube/config
   fi
   printstyle 'Success generate config! \n \n' 'success'
+  lineprint
   printstyle "Generating token... \n" 'info'
+  lineprint
+
   KTOKEN=$(kubeadm token create --print-join-command)
   
   if [[ -n "$KTOKEN" ]]; then
-    printstyle "Success Create Token \n" 'success'
+    printstyle "Success Create Token \n \n" 'success'
   else
     printstyle "Failed Create Token \n" 'danger'
     exit 1
   fi
 
-  printstyle 'Token is :' 'info'
+  printstyle 'Token is : ' 'info'
   echo "$KTOKEN"
   echo -n "$KTOKEN" > /tmp/k8stkfile.kstk
   echo " --cri-socket=unix:///var/run/cri-dockerd.sock" >> /tmp/k8stkfile.kstk
