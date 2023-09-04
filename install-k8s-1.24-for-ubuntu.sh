@@ -24,11 +24,11 @@ printstyle() {
 
 # Return true if a value match in an name of container runtimes.
 valid_container_name() {
-  if [["$1" == "containerd"]]; then
+  if [[ "$1" == "containerd" ]]; then
     CRI_SOCKET="unix:///run/containerd/containerd.sock"
     USED_CONTAINERD=true
     return 1
-  elif [["$1" == "docker"]]; then
+  elif [[ "$1" == "docker" ]]; then
     CRI_SOCKET="unix:///var/run/cri-dockerd.sock"
     USED_CONTAINERD=false
     return 1
@@ -334,10 +334,16 @@ mv ./docker-archive-keyring.gpg /etc/apt/trusted.gpg.d/
 printstyle 'Success! \n \n' 'success'
 
 if [[ $USED_CONTAINERD == true ]]; then
-  apt-get install -y containerd.io
   lineprint
   printstyle '\nConfiguring containerd... \n' 'info'
   lineprint
+  echo | add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  apt-get update
+  apt-get install -y containerd.io
+  if [[ $? -ne 0 ]]; then
+      printstyle 'Fail to install containerd.io ... \n' 'warning'
+      exit 1
+  fi
   mkdir -p /etc/containerd
   containerd config default | tee /etc/containerd/config.toml
   sed -i 's/            SystemdCgroup = false/            SystemdCgroup = true/' /etc/containerd/config.toml
@@ -527,7 +533,7 @@ if [[ $VALID_MASTER == true ]]; then
   printstyle "Generating token... \n" 'info'
   KTOKEN=$(kubeadm token create --print-join-command)
   
-  if [[ -n "$TOKENCOMM" ]]; then
+  if [[ -n "$KTOKEN" ]]; then
     printstyle "Success Create Token \n" 'success'
   else
     printstyle "Failed Create Token \n" 'danger'
