@@ -92,7 +92,7 @@ valid_version() {
   done
   printstyle "Invalid input or unsupported version. \n" "danger"
   printstyle "List of supported versions:"
-  printstyle "${SUPPORT_VERSION_LIST[@]}" "info"
+  echo "${SUPPORT_VERSION_LIST[@]}"
   return 0
 }
 
@@ -247,8 +247,8 @@ while (( "$#" )); do
       exit 0
       ;;
     -kv|--k8sversion)
-      printstyle "List of supported k8s versions:"
-      printstyle "${SUPPORT_VERSION_LIST[@]}" "info"
+      printstyle "List of supported k8s versions: \n"
+      printstyle "${SUPPORT_VERSION_LIST[@]} \n" "info"
       exit 0
       ;;
     -*|--*) # unsupported flags
