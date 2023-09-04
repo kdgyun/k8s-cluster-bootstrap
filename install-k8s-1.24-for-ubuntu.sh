@@ -22,6 +22,22 @@ printstyle() {
   fi
 }
 
+# Return true if a value match in an name of container runtimes.
+valid_container_name() {
+  if [["$1" == "containerd"]]; then
+    CRI_SOCKET="unix:///run/containerd/containerd.sock"
+    USED_CONTAINERD=true
+    return 1
+  elif [["$1" == "docker"]]; then
+    CRI_SOCKET="unix:///var/run/cri-dockerd.sock"
+    USED_CONTAINERD=false
+    return 1
+  else
+    printstyle "Container runtime name is invalid : $1 \n" "danger"
+    return 0;
+  fi
+}
+
 # Return true if we pass in an IPv4 pattern.
 valid_ip() {
   rx="([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
@@ -106,6 +122,9 @@ OPT_REGULAR_USER=false
 VALID_USERNAME=false
 VALID_PWD=false
 WITH_CNI=false
+CONTAINER_TYPE="docker"
+USED_CONTAINERD=false
+CRI_SOCKET=""
 
 while (( "$#" )); do
   case "$1" in
@@ -167,19 +186,33 @@ while (( "$#" )); do
         exit 1
       fi
       ;;
+    -ct|--containertype)
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+        CONTAINER_TYPE=$2
+        shift 2
+      else
+        printstyle "Error: Argument for $1 is missing \n" "danger"
+        exit 1
+      fi
+      ;;
     -h|--help)
       printstyle "Usage:  $0 [options] <value> \n"
-      printstyle "        -c | --cni                                        Applying CNI with calico when Set to initialize as a master node. (When using this flag, the parameter must be a private IP range that does not overlap with the Host IP. \nex. 172.16.0.0/12)\n"
-      printstyle "                                                          You can use one of three types of private IP.\n"
-      printstyle "                                                          10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16\n"
-      printstyle "                                                          e.g. Host IP: 192.168.x.x then, cidr: 172.16.0.0/12\n"
-      printstyle "        -h | --help                                       This help text \n"
-      printstyle "        -i | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. \n"
-      printstyle "        -m | --master                                     Set to initialize as a master node. \n"
-      printstyle "        -p | --password <Password>                        Use password(master node) to access the master for a token copy when initialing worker node. \n"
-      printstyle "        -r | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes. \n"
-      printstyle "        -u | --username <Username>                        Use username(master node) to access the master for a token copy when initialing worker node. \n"
-      printstyle "        -w | --worker                                     Set to initialize as a worker node. \n"
+      printstyle "        -c  | --cni                                        Applying CNI with calico when Set to initialize as a master node. (When using this flag, the parameter must be a private IP range that does not overlap with the Host IP. \nex. 172.16.0.0/12)\n"
+      printstyle "                                                           You can use one of three types of private IP.\n"
+      printstyle "                                                           10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16\n"
+      printstyle "                                                           e.g. Host IP: 192.168.x.x then, cidr: 172.16.0.0/12\n"
+      printstyle "        -h  | --help                                       This help text \n"
+      printstyle "        -i  | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. \n"
+      printstyle "        -m  | --master                                     Set to initialize as a master node. \n"
+      printstyle "        -p  | --password <Password>                        Use password(master node) to access the master for a token copy when initialing worker node. \n"
+      printstyle "        -r  | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes. \n"
+      printstyle "        -u  | --username <Username>                        Use username(master node) to access the master for a token copy when initialing worker node. \n"
+      printstyle "        -w  | --worker                                     Set to initialize as a worker node. \n"
+      printstyle "        -ct | --containertype <Container Runtime>          Set to specify for a container runtime type. \n"
+      printstyle "                                                           if you not use this option, it'll default to docker(cri-docker) runtime. \n"
+      printstyle "                                                           You can use one of two types of container runtime.\n"
+      printstyle "                                                           docker, containerd\n"
+      printstyle "                                                           e.g. -ct containerd\n"
       exit 0
       ;;
     -*|--*) # unsupported flags
@@ -224,6 +257,11 @@ if [[ $VALID_MASTER == true ]] || [[ $VALID_WORKER == true ]]; then
   elif valid_ip "$HOST_IP" ; then
     exit 1
   fi
+fi
+
+# check container name
+if valid_container_name "$CONTAINER_TYPE" ; then
+  exit 1
 fi
 
 HOME_PATH=$HOME
@@ -287,7 +325,7 @@ printstyle 'Success! \n \n' 'success'
 
 # Download the GPG key for docker
 lineprint
-printstyle "Downloading the GPG key for docker ... \n" 'info'
+printstyle "Downloading the GPG key from docker repository ... \n" 'info'
 lineprint
 wget -O - https://download.docker.com/linux/ubuntu/gpg > ./docker.key
 gpg --no-default-keyring --keyring ./docker.gpg --import ./docker.key
@@ -295,64 +333,76 @@ gpg --no-default-keyring --keyring ./docker.gpg --export > ./docker-archive-keyr
 mv ./docker-archive-keyring.gpg /etc/apt/trusted.gpg.d/
 printstyle 'Success! \n \n' 'success'
 
-# Add the docker repository
-lineprint
-printstyle "Adding the docker repository and installing docker... \n" 'info'
-lineprint
-echo | add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-apt-get update
-DOCKERVERSION=$(apt-cache madison docker-ce | awk '{ print $3 }' | head -1)
-apt-get install -y docker-ce=$DOCKERVERSION docker-ce-cli=$DOCKERVERSION containerd.io docker-buildx-plugin docker-compose-plugin
-apt-mark hold docker-ce docker-ce-cli
-groupadd docker
-usermod -aG docker $USER
-printstyle 'Success! \n \n' 'success'
+if [[ $USED_CONTAINERD == true ]]; then
+  apt-get install -y containerd.io
+  lineprint
+  printstyle '\nConfiguring containerd... \n' 'info'
+  lineprint
+  mkdir -p /etc/containerd
+  containerd config default | tee /etc/containerd/config.toml
+  sed -i 's/            SystemdCgroup = false/            SystemdCgroup = true/' /etc/containerd/config.toml
+  systemctl restart containerd
+  sleep 5
+else
+  # Add the docker repository
+  lineprint
+  printstyle "Adding the docker repository and installing docker... \n" 'info'
+  lineprint
+  echo | add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  apt-get update
+  DOCKERVERSION=$(apt-cache madison docker-ce | awk '{ print $3 }' | head -1)
+  apt-get install -y docker-ce=$DOCKERVERSION docker-ce-cli=$DOCKERVERSION containerd.io docker-buildx-plugin docker-compose-plugin
+  apt-mark hold docker-ce docker-ce-cli
+  groupadd docker
+  usermod -aG docker $USER
+  printstyle 'Success! \n \n' 'success'
 
-# clone the repository
-lineprint
-printstyle "Cloning the cri-dockerd repository ... \n" 'info'
-lineprint
-git clone https://github.com/Mirantis/cri-dockerd.git
-printstyle 'Success! \n \n' 'success'
+  # Installing go lang
+  lineprint
+  printstyle "Installing Golang ... \n" 'info'
+  lineprint
+  wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz
+  rm -rf /usr/local/go && tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
+  echo 'export PATH=$PATH:/usr/local/go/bin' >>${HOME_PATH}/.profile
+  echo 'export GOPATH=$HOME/go' >>${HOME_PATH}/.profile
+  source ${HOME_PATH}/.profile
+  mkdir -p $GOPATH
+  go version
+  sleep 3
+  printstyle 'Success! \n \n' 'success'
 
-# Installing go lang
-lineprint
-printstyle "Installing Golang ... \n" 'info'
-lineprint
-wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz
-rm -rf /usr/local/go && tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
-echo 'export PATH=$PATH:/usr/local/go/bin' >>${HOME_PATH}/.profile
-echo 'export GOPATH=$HOME/go' >>${HOME_PATH}/.profile
-source ${HOME_PATH}/.profile
-mkdir -p $GOPATH
-go version
-sleep 3
-printstyle 'Success! \n \n' 'success'
+  # clone the repository
+  lineprint
+  printstyle "Cloning the cri-dockerd repository ... \n" 'info'
+  lineprint
+  git clone https://github.com/Mirantis/cri-dockerd.git
+  printstyle 'Success! \n \n' 'success'
 
+  # Install Container runtime (cri-dockerd)
+  cd cri-dockerd
 
-# Install Container runtime (cri-dockerd)
-cd cri-dockerd
+  if ! [[ "$PWD" = "${HOME_PATH}/cri-dockerd" ]]; then 
+    cd $HOME_PATH
+  fi
 
-if ! [[ "$PWD" = "${HOME_PATH}/cri-dockerd" ]]; then 
-  cd $HOME_PATH
+  lineprint
+  printstyle "Install the cri-dockerd ... (It will takes about 10~30 minutes) \n" 'info'
+  lineprint
+  mkdir bin
+  go build -o bin/cri-dockerd
+  mkdir -p /usr/local/bin
+  install -o root -g root -m 0755 bin/cri-dockerd /usr/local/bin/cri-dockerd
+  cp -a packaging/systemd/* /etc/systemd/system
+  sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
+  systemctl daemon-reload
+  systemctl enable cri-docker.service
+  systemctl enable --now cri-docker.socket
+  systemctl restart cri-docker.socket
+
+  sleep 15
+  printstyle 'Success! \n \n' 'success'
 fi
 
-lineprint
-printstyle "Install the cri-dockerd ... (It will takes about 10~30 minutes) \n" 'info'
-lineprint
-mkdir bin
-go build -o bin/cri-dockerd
-mkdir -p /usr/local/bin
-install -o root -g root -m 0755 bin/cri-dockerd /usr/local/bin/cri-dockerd
-cp -a packaging/systemd/* /etc/systemd/system
-sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
-systemctl daemon-reload
-systemctl enable cri-docker.service
-systemctl enable --now cri-docker.socket
-systemctl restart cri-docker.socket
-
-sleep 15
-printstyle 'Success! \n \n' 'success'
 
 
 # Add the GPG key for kubernetes
@@ -452,7 +502,7 @@ EOF
 sysctl --system
 sleep 5
 
-printstyle 'OK! \n \n' 'success'
+printstyle '\nOK! \n \n' 'success'
 
 # init master node
 if [[ $VALID_MASTER == true ]]; then
@@ -460,7 +510,8 @@ if [[ $VALID_MASTER == true ]]; then
   printstyle "Generating cluster... \n" 'info'
   lineprint
 
-  kubeadm init --kubernetes-version=v1.24.15 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=$CNI_CIDR --cri-socket=unix:///var/run/cri-dockerd.sock
+  kubeadm init --kubernetes-version=v1.24.15 --apiserver-advertise-address=$HOST_IP --pod-network-cidr=$CNI_CIDR --cri-socket=$CRI_SOCKET
+  
   printstyle '\nSuccess generate cluster! \n \n' 'success'
   printstyle "Generating config... \n" 'info'
   mkdir -p $HOME_PATH/.kube
@@ -475,6 +526,14 @@ if [[ $VALID_MASTER == true ]]; then
   printstyle 'Success generate config! \n \n' 'success'
   printstyle "Generating token... \n" 'info'
   KTOKEN=$(kubeadm token create --print-join-command)
+  
+  if [[ -n "$TOKENCOMM" ]]; then
+    printstyle "Success Create Token \n" 'success'
+  else
+    printstyle "Failed Create Token \n" 'danger'
+    exit 1
+  fi
+
   printstyle 'Token is :' 'info'
   echo "$KTOKEN"
   echo -n "$KTOKEN" > /tmp/k8stkfile.kstk
