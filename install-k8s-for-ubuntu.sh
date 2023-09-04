@@ -248,7 +248,7 @@ while (( "$#" )); do
       ;;
     -kv|--k8sversion)
       printstyle "List of supported k8s versions: \n"
-      printstyle "${SUPPORT_VERSION_LIST[@]} \n" "info"
+      echo "${SUPPORT_VERSION_LIST[@]}"
       exit 0
       ;;
     -*|--*) # unsupported flags
