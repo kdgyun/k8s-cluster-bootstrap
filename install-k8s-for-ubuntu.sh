@@ -510,7 +510,7 @@ fi
 lineprint
 printstyle "Installing the kubernetes components ... \n" 'info'
 lineprint
-apt-get install -y kubelet=$K8S_VERSION-00 kubeadm=$K8S_VERSION-00 kubectl=$K8S_VERSION-00
+apt-get install -y kubelet=$K8S_VERSION-1.1 kubeadm=$K8S_VERSION-1.1 kubectl=$K8S_VERSION-1.1
 ## The exit status of the last command run is 
 ## saved automatically in the special variable $?.
 ## Therefore, testing if its value is 0, is testing
@@ -520,10 +520,10 @@ if [[ $? > 0 ]]; then
   rm /var/lib/apt/lists/lock
   rm /var/cache/apt/archives/lock
   rm /var/lib/dpkg/lock*
-  apt-get install -y kubelet=$K8S_VERSION-00 kubeadm=$K8S_VERSION-00 kubectl=$K8S_VERSION-00
+  apt-get install -y kubelet=$K8S_VERSION-1.1 kubeadm=$K8S_VERSION-1.1 kubectl=$K8S_VERSION-1.1
   if [[ $? > 0 ]]; then
     outputerr = 
-    printstyle "apt-get install -y kubelet=$K8S_VERSION-00 kubeadm=$K8S_VERSION-00 kubectl=$K8S_VERSION-00 Fail... \n Please fixed apt-get" 'warning'
+    printstyle "apt-get install -y kubelet=$K8S_VERSION-1.1 kubeadm=$K8S_VERSION-1.1 kubectl=$K8S_VERSION-1.1 Fail... \n Please fixed apt-get" 'warning'
     exit
   fi
 
