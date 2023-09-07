@@ -462,15 +462,18 @@ if ! [[ "$PWD" = "$HOME_PATH" ]]; then
   cd $HOME_PATH
 fi
 
+VERSION_SPLIT=($(echo $K8S_VERSION | tr "." "\n"))
+K8S_MAJOR_VERSION="${VERSION_SPLIT[0]}.${VERSION_SPLIT[1]}"
+mkdir -m 755 /etc/apt/keyrings
 # temp: curl -fsLo /usr/share/keyrings/kubernetes-archive-keyring.gpg http://printstyle-bio.cn:8888/kubernetes-archive-keyring.gpg
-curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v$K8S_MAJOR_VERSION/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 printstyle 'Success! \n \n' 'success'
 
 # Add the kubernetes repository
 lineprint
 printstyle "Apply the kubernetes repository ... \n" 'info'
 lineprint
-echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v'"$K8S_MAJOR_VERSION"'/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
 sleep 2
 printstyle '\nSuccess! \n \n' 'success'
 
@@ -493,8 +496,10 @@ if [[ $? -ne 0 ]]; then
     printstyle 'retry... \n'
     curl -fsSLo /etc/apt/trusted.gpg.d/kubernetes-archive-keyring.gpg https://dl.k8s.io/apt/doc/apt-key.gpg
     echo "deb [signed-by=/etc/apt/trusted.gpg.d/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
-
+    printstyle 'cannot update for kubernetes repository! \n \n' 'warning'
+    cat apt-get-update.log
     rm apt-get-update.log
+    exit 1
   fi
   apt-get update
   printstyle 'Success! \n \n' 'success'
