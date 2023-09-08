@@ -1,4 +1,4 @@
- **한글 문서** | **[English Document](./README-en.md)**
+ **[한글 문서](./README.md)** | **English Document**
 
 <br />
   
@@ -20,7 +20,7 @@
 
 <br />
 
-# KubernetesAutoDeployment
+# k8s-cluster-bootstrap
    
 
 <br />
