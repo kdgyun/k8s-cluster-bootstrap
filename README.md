@@ -88,7 +88,7 @@ sudo ./k8s-cluster-bootstrap.sh [options] <value>
 | ```-kv / --k8sversion``` |  | 지원하는 쿠버네티스 버전을 보여줍니다. |  |
 | ```-m / --master``` |  | master 노드를 생성하고자 하는 경우 ```-m``` 플래그를 사용하면 됩니다. | ```-i/--ip``` 플래그가 반드시 요구됩니다. |
 | ```-p / --password``` | Master(Host) node password | ssh 로그인시 마스터 노드에 접속하기 위한 비밀번호입니다. <br /> 같은 서브넷 안에서 worker 노드 생성시 master 노드로부터 token을 갖고오기 위한 옵션입니다.  | ```-u/--username``` 플래그와 반드시 같이 사용해야합니다. |
-| ```-r / --regularuser``` | HOME_PATH of regular user | 현재 sudo 권한으로 실행한 user 외에 다른 일반 유저에 대해서도 접근 권한을 부여하고자 할 때 사용합니다. <br /> ```-r /home/username``` 과 같이 사용하며, 이 때 HOME_PATH는 반드시 **해당 계정의 홈 디렉토리($HOME)** 이어야 합니다. | 선택 옵션이나, ```-m``` (마스터 노드 생성) 때에만 사용되는 옵션입니다. |
+| ```-r / --regularuser``` <br /> **(\*beta)** | HOME_PATH of regular user | 현재 sudo 권한으로 실행한 user 외에 다른 일반 유저에 대해서도 접근 권한을 부여하고자 할 때 사용합니다. <br /> ```-r /home/username``` 과 같이 사용하며, 이 때 HOME_PATH는 반드시 **해당 계정의 홈 디렉토리($HOME)** 이어야 합니다. | 선택 옵션이나, ```-m``` (마스터 노드 생성) 때에만 사용되는 옵션입니다. |
 | ```-u / --username``` | Master(Host) node username | ssh 로그인시 마스터 노드에 접속하기 위한 username입니다. <br /> 같은 서브넷 안에서 worker 노드 생성시 master 노드로부터 token을 갖고오기 위한 옵션입니다.  | ```-p/--password``` 옵션과 반드시 같이 사용해야합니다. |
 | ```-v / --version``` | k8s version | Kubernetes 버전을 설정하기 위해 사용됩니다. <br /> (e.g. -v 1.25.0)  <br />지원 버전은 ```1.24.15``` 부터 ```1.27.5``` 까지이며 지원 버전을 상세하게 보고자 한다면 ```-kv``` 또는 <br /> ```--k8sversion``` 옵션을 통해 확인이 가능합니다. | 해당 옵션을 사용하고자 하는 경우 파라미터는 ```x.y.z``` 형식으로 주어져야 합니다. <br /> 만약 해당 옵션을 사용하지 않을 경우 기본 버전은 ```1.24.15``` 이며 RC 또는 beta 버전의 경우 정식 릴리즈 버전이 아니므로 지원하지 않습니다. |
 | ```-w / --worker``` |  | worker 노드를 생성하고자 하는 경우 -w 플래그를 사용하면 됩니다. | ```-i/--ip``` , ```-u/--username```, ```-p/-password``` 3개의 옵션이 반드시 요구됩니다. |
