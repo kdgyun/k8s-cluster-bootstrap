@@ -21,7 +21,8 @@
 <br />
 
 # k8s-cluster-bootstrap
-   
+
+An easy and ready-to-go bootstrap for k8s installation and automatic cluster deployment
 
 <br />
    
@@ -30,7 +31,6 @@
 - Ubuntu (or ubuntu server) version between 18.04 (inclusive) and 22.04 (inclusive) recommended.
 - Nodes (both master and workers) are to be in the same subnet. **For calico autodeployment to work** the Master node's IP must **not be within the same CIDR**
 - If accessing via ssh, use username/password authentication and not pem
-- 스크립트 내 사용포트에 대해 open을 하나, 만약 별도의 자체 방화벽이 있을 경우 port 개방이 필요함
 - The script automatically opens some ports (such as 6443), but ports may need to be manually opened in case of firewalls or company policies.
   ([ports required to be open for k8s installation](https://v1-24.docs.kubernetes.io/docs/reference/ports-and-protocols/))
 
@@ -84,29 +84,29 @@ The following shows the available options to run this bootstrap.
 | ```-ct / --containertype``` | Container Runtime | Specify the type of container runtime k8s will use. If empty, it will default to ```docker(cri-docker)``` | For **cri-docker** write ```docker``` , <br /> for **containerd** write ```containerd``` as the parameter for this option. |
 | ```-h / --help``` |  | Display all options and their respective descriptions. |  |
 | ```-i / --ip``` | Host IP | Declare IP for master node (e.g, 10.0.0.1). <br /> In case of deploying k8s in a cloud (e.g, aws, gcp …) declare an IP with the scope of a private IP, not the public IP. |  |
-| ```-kv / --k8sversion``` |  | 지원하는 쿠버네티스 버전을 보여줍니다. |  |
-| ```-m / --master``` |  | master 노드를 생성하고자 하는 경우 ```-m``` 플래그를 사용하면 됩니다. | ```-i/--ip``` 플래그가 반드시 요구됩니다. |
-| ```-p / --password``` | Master(Host) node password | ssh 로그인시 마스터 노드에 접속하기 위한 비밀번호입니다. <br /> 같은 서브넷 안에서 worker 노드 생성시 master 노드로부터 token을 갖고오기 위한 옵션입니다.  | ```-u/--username``` 플래그와 반드시 같이 사용해야합니다. |
-| ```-r / --regularuser``` | HOME_PATH of regular user | 현재 sudo 권한으로 실행한 user 외에 다른 일반 유저에 대해서도 접근 권한을 부여하고자 할 때 사용합니다. <br /> ```-r /home/username``` 과 같이 사용하며, 이 때 HOME_PATH는 반드시 **해당 계정의 홈 디렉토리($HOME)** 이어야 합니다. | 선택 옵션이나, ```-m``` (마스터 노드 초기화) 때에만 사용되는 옵션입니다. |
-| ```-u / --username``` | Master(Host) node username | ssh 로그인시 마스터 노드에 접속하기 위한 username입니다. <br /> 같은 서브넷 안에서 worker 노드 생성시 master 노드로부터 token을 갖고오기 위한 옵션입니다.  | ```-p/--password``` 옵션과 반드시 같이 사용해야합니다. |
-| ```-v / --version``` | k8s version | Kubernetes 버전을 설정하기 위해 사용됩니다. <br /> 지원 버전은 ```1.24.15``` 부터 ```1.27.5``` 까지이며 지원 버전을 상세하게 보고자 한다면 ```-kv``` 또는 <br /> ```--k8sversion``` 옵션을 통해 확인이 가능합니다. | 해당 옵션을 사용하고자 하는 경우 파라미터는 ```x.y.z``` 형식으로 주어져야 합니다. <br /> 만약 해당 옵션을 사용하지 않을 경우 기본 버전은 ```1.24.15``` 이며 RC 또는 beta 버전의 경우 정식 릴리즈 버전이 아니므로 지원하지 않습니다. |
-| ```-w / --worker``` |  | worker 노드를 생성하고자 하는 경우 -w 플래그를 사용하면 됩니다. | ```-i/--ip``` , ```-u/--username```, ```-p/-password``` 3개의 옵션이 반드시 요구됩니다. |
+| ```-kv / --k8sversion``` |  | Displays all versions of k8s this bootstrap can install |  |
+| ```-m / --master``` |  | use this option to install a master ```-m```  | The flag```-i/--ip``` is a must if this option is utilized. |
+| ```-p / --password``` | Master(Host) node password | Required for ssh login using a password. <br /> It is done so the worker node can access the master during installation to obtain the join token. Both master and worker must be in the same subnet.  | ```-u/--username``` is a must if this option is utilized |
+| ```-r / --regularuser``` | HOME_PATH of regular user | This bootstrap is executed with sudo permission, thus this option is used to allow regular users (such as the user `ubuntu` in ubuntu servers) to also use k8s. <br /> run this option as ```-r /home/username```. Crucial that HOME_PATH is the same as **the regular user's home directory($HOME)** | Not a must option. Utilized when initializing a master node with ```-m```. |
+| ```-u / --username``` | Master(Host) node username | username for ssh login. <br /> Set so a newly created worker node within the same subnet as the master node can fetch the join token from the master node.  | Must be used with ```-p/--password```  |
+| ```-v / --version``` | k8s version | Declare k8s version to install <br /> Supports k8s version from ```1.24.15``` to ```1.27.5``` and more details can be checked using the ```-kv``` or <br /> ```--k8sversion``` option. | The parameters for this options are to be written as ```x.y.z```. <br /> Not using this option will default k8s version to ```1.24.15``` and does not support RC nor beta versions since they are not stable versions. |
+| ```-w / --worker``` |  | used to specify worker node installation. | the following 3 options are required: ```-i/--ip``` , ```-u/--username```, ```-p/-password```. |
 
 <br />
 <br />
 
-어떠한 옵션도 사용하지 않고 실행할 경우 쿠버네티스 클러스터 구성에 필요한 패키지 설치까지만 진행됩니다.
+Executing this bootstrap with **no** options will only install the packages for k8s (no auto deployment)
 
-패키지 설치만 할 경우 사용자가 kubeadm init 명령을 실행하여 쿠버네티스 클러스터를 구성할 수 있습니다.
+In the case that only the packages are install, you can still use the ```kubeadm init``` command to manually deploy nodes.
 
-master 노드 생성 예)
+example for installing k8s and deploying a **master** node:
 
 ```bash
 sudo ./install-k8s-for-ubuntu.sh -m -c 192.168.0.0/16 -i 10.0.0.1 -ct containerd -v 1.25.00
 ```
 <br />   
 
-worker 노드 생성 예)
+example for installing k8s and deploying a **worker** node:
 
 ```bash
 sudo ./install-k8s-for-ubuntu.sh -w -i 10.0.0.1 -u username -p pwd123!
