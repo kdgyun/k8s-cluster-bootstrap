@@ -44,7 +44,7 @@ An easy and ready-to-go bootstrap for k8s installation and automatic cluster dep
 
 ### 1. Bootstrap download
 
-From the home directory, run `curl -sSLO http://raw.githubusercontent.com/kdgyun/KubernetesAutoDeployment/main/install-k8s-for-ubuntu.sh` or download from github [**latest release 버전**](https://github.com/kdgyun/KubernetesAutoDeployment/releases/) and run install-k8s-for-ubuntu.sh
+From the home directory, run `curl -sSLO http://raw.githubusercontent.com/kdgyun/KubernetesAutoDeployment/main/install-k8s-for-ubuntu.sh` or download from github [**latest release version**](https://github.com/kdgyun/KubernetesAutoDeployment/releases/) and run install-k8s-for-ubuntu.sh
 
 <br />   
 
