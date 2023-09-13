@@ -103,7 +103,7 @@ sudo ./k8s-cluster-bootstrap.sh [options] <value>
 master 노드 생성 예)
 
 ```bash
-sudo ./k8s-cluster-bootstrap.sh -m -c 192.168.0.0/16 -i 10.0.0.1 -ct containerd -v 1.25.00
+sudo ./k8s-cluster-bootstrap.sh -m -c 192.168.0.0/16 -i 10.0.0.1 -ct containerd -v 1.25.0
 ```
 <br />   
 
