@@ -80,7 +80,7 @@ The following shows the available options to run this bootstrap.
 
 | Option(Flag) | Values | Description, example | Remarks |
 | --- | --- | --- | --- |
-| ```-c / --cni``` |  | Installs cni(with calico) during master node installation. | To utilize this option, the master's IP(Host IP) cannot overlap with calico's CIDR. Please utilize one of the following CIDR: ```10.0.0.0/8```, ```172.16.0.0/12```, ```192.168.0.0/16```. |
+| ```-c / --cni``` | CIDR | Installs cni(with calico) during master node installation. | To utilize this option, the master's IP(Host IP) cannot overlap with calico's CIDR. Please utilize one of the following CIDR: ```10.0.0.0/8```, ```172.16.0.0/12```, ```192.168.0.0/16```. |
 | ```-ct / --containertype``` | Container Runtime | Specify the type of container runtime k8s will use. If empty, it will default to ```docker(cri-docker)``` | For **cri-docker** write ```docker``` , <br /> for **containerd** write ```containerd``` as the parameter for this option. |
 | ```-h / --help``` |  | Display all options and their respective descriptions. |  |
 | ```-i / --ip``` | Host IP | Declare IP for master node (e.g, 10.0.0.1). <br /> In case of deploying k8s in a cloud (e.g, aws, gcp …) declare an IP with the scope of a private IP, not the public IP. |  |
