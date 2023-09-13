@@ -221,7 +221,7 @@ while (( "$#" )); do
       ;;
     -h|--help)
       printstyle "Usage:  $0 [options] <value> \n"
-      printstyle "        -c  | --cni                                        Applying CNI with calico when Set to initialize as a master node. (When using this flag, the parameter must be a private IP range that does not overlap with the Host IP. \nex. 172.16.0.0/12)\n"
+      printstyle "        -c  | --cni <CIDR>                                 Applying CNI with calico when Set to initialize as a master node. (When using this flag, the parameter must be a private IP range that does not overlap with the Host IP. \nex. 172.16.0.0/12)\n"
       printstyle "                                                           You can use one of three types of private IP.\n"
       printstyle "                                                           10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16\n"
       printstyle "                                                           e.g. Host IP: 192.168.x.x then, cidr: 172.16.0.0/12\n"
