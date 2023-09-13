@@ -68,18 +68,18 @@ valid_ip() {
         if [[ "$2" == *192.168.*.*/* ]] || [[ "$2" == *172.16.*.*/* ]] || [[ "$2" == *10.0.*.*/* ]]; then
           return 1
         else
-          printstyle "Incorrect format private IP address : $2 \n" "danger"
+          printstyle "Incorrect private IP address format  : $2 \n" "danger"
           return 0
         fi
       else
-        printstyle "Incorrect format IP address : $2 \n" "danger"
+        printstyle "Incorrect IP address format  : $2 \n" "danger"
         return 0
       fi
       return 1
     fi
     return 1
   else
-    printstyle "Incorrect format IP address : $1 \n" "danger"
+    printstyle "Incorrect IP address format  : $1 \n" "danger"
     return 0
   fi
 }
@@ -90,7 +90,7 @@ valid_version() {
       return 1
     fi
   done
-  printstyle "Invalid input or unsupported version. \n" "danger"
+  printstyle "Invalid or unsupported version. \n" "danger"
   printstyle "List of supported versions:"
   echo "${SUPPORT_VERSION_LIST[@]}"
   return 0
@@ -103,12 +103,12 @@ valid_cidr() {
     if [[ $WITH_CNI == true ]]; then
       return 1
     elif [[ "$1" == *192.168.*.* ]]; then
-      printstyle "IP addresses in the 192.168.0.0/16 range cannot be used. if you want it, don't use --c/--cni flag \n" "danger"
+      printstyle "IP addresses in 192.168.0.0/16 range cannot be used. if you want it, don't use --c/--cni flag \n" "danger"
       return 0
     fi
     return 1
   else
-    printstyle "Incorrect format IP address : $1 \n" "danger"
+    printstyle "Incorrect IP address format  : $1 \n" "danger"
     return 0
   fi
 }
@@ -221,29 +221,29 @@ while (( "$#" )); do
       ;;
     -h|--help)
       printstyle "Usage:  $0 [options] <value> \n"
-      printstyle "        -c  | --cni                                        Applying CNI with calico when Set to initialize as a master node. (When using this flag, the parameter must be a private IP range that does not overlap with the Host IP. \nex. 172.16.0.0/12)\n"
-      printstyle "                                                           You can use one of three types of private IP.\n"
+      printstyle "        -c  | --cni                                        Use this flag to apply CNI with calico when initializing a master node. (When using this flag, the parameter must be a private IP range that does not overlap with the Host IP. \nex. 172.16.0.0/12)\n"
+      printstyle "                                                           You can use one of three types of private IP range.\n"
       printstyle "                                                           10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16\n"
       printstyle "                                                           e.g. Host IP: 192.168.x.x then, cidr: 172.16.0.0/12\n"
       printstyle "        -ct | --containertype <Container Runtime>          Set to specify for a container runtime type. \n"
-      printstyle "                                                           if you not use this option, it'll default to docker(cri-docker) runtime. \n"
-      printstyle "                                                           You can use one of two types of container runtime.\n"
+      printstyle "                                                           if you not use this option, it will default to docker(cri-docker) runtime. \n"
+      printstyle "                                                           You can use one of two types of container runtime:.\n"
       printstyle "                                                           docker, containerd\n"
       printstyle "                                                           e.g. -ct containerd\n"
-      printstyle "        -h  | --help                                       This help text \n"
+      printstyle "        -h  | --help                                       Use this flag for more detailed help \n"
       printstyle "        -i  | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. \n"
       printstyle "        -kv | --k8sversion                                 Shows a list of supported Kubernetes versions. \n"
-      printstyle "        -m  | --master                                     Set to initialize as a master node. \n"
+      printstyle "        -m  | --master                                     Set to initialize this node a master node. \n"
       printstyle "        -p  | --password <Password>                        Use password(master node) to access the master for a token copy when initialing worker node. \n"
       printstyle "        -r  | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes. \n"
       printstyle "        -u  | --username <Username>                        Use username(master node) to access the master for a token copy when initialing worker node. \n"
-      printstyle "        -v  | --version <k8s Version>                      Select your version of Kubernetes. The default is version 1.24.15. \n"
-      printstyle "                                                           Parameters must be in x.y.z format, and Available versions are 1.24.15~1.27.5 \n"
+      printstyle "        -v  | --version <k8s Version>                      Select your version of Kubernetes to install. The default is version 1.24.15. \n"
+      printstyle "                                                           Parameters must be in x.y.z format, and available versions are 1.24.15 ~ 1.27.5 \n"
       printstyle "                                                           Kubernetes versions can be found at https://github.com/kubernetes/kubernetes/releases. \n"
-      printstyle "                                                           or -kv | --k8sversion option. \n"
-      printstyle "                                                           And we are not responsible for compatibility with RC(Release Candidate) or beta versions. \n"
+      printstyle "                                                           or using the flag -kv | --k8sversion option. \n"
+      printstyle "                                                           We are not responsible for compatibility with RC(Release Candidate) or beta versions. \n"
       printstyle "                                                           e.g. -v 1.25.0 \n"
-      printstyle "        -w  | --worker                                     Set to initialize as a worker node. \n"
+      printstyle "        -w  | --worker                                     Set to initialize this node as a worker node. \n"
       exit 0
       ;;
     -kv|--k8sversion)
@@ -269,15 +269,15 @@ if [[ $VALID_MASTER == true ]] && [[ $VALID_WORKER == true ]]; then
   exit 1
 elif [[ $VALID_PARAM2 == false ]]; then
   if [[ $VALID_MASTER == true ]] || [[ $VALID_WORKER == true ]]; then
-    printstyle "Error: Arguments with not proper flag: -i/--ip \n" "danger"
+    printstyle "Error: Missing flag and argument: -i/--ip \n" "danger"
     printstyle "$0 -h for help message \n" "danger"
     exit 1
   fi
 elif [[ $VALID_WORKER == true ]] && [[ $VALID_USERNAME == false ]]; then
-  printstyle "Error: Arguments and flag with not proper flag: -u/--username or -p/--password \n" "danger"
+  printstyle "Error: Missing flag and argument: -u/--username or -p/--password \n" "danger"
   exit 1
 elif [[ $VALID_WORKER == true ]] && [[ $VALID_PWD == false ]]; then
-  printstyle "Error: Arguments and flag with not proper flag: -u/--username or -p/--password \n" "danger"
+  printstyle "Error: Missing flag and argument: -u/--username or -p/--password \n" "danger"
   exit 1
 fi
 # check Host-IP
@@ -310,19 +310,19 @@ printstyle "Home path is $HOME_PATH \n" "info"
 
 # requirement package list
 if ! which wget > /dev/null; then
-  printstyle 'Can not find wget, install with: \n' "danger"
+  printstyle 'Cannot find wget, install with: \n' "danger"
   printstyle '           apt-get install wget \n'
   exit 1
 fi
 
 if ! which gpg > /dev/null; then
-  printstyle 'Can not find GnUPG, install with: \n' "danger"
+  printstyle 'Cannot find GnUPG, install with: \n' "danger"
   printstyle '           apt-get install gnupg \n'
   exit 1
 fi
 
 if ! which git > /dev/null; then
-  printstyle 'Can not find git, install with: \n' "danger"
+  printstyle 'Cannot find git, install with: \n' "danger"
   printstyle            'apt-get intsall git \n'
   exit 1
 fi
@@ -358,7 +358,7 @@ printstyle 'Success! \n \n' 'success'
 
 # update and install packages needed to use the Kubernetes
 lineprint
-printstyle 'Update and install packages needed to use the Kubernetes ... \n' 'info'
+printstyle 'Update and install packages needed to use Kubernetes ... \n' 'info'
 lineprint
 apt-get update
 apt-get install -y apt-transport-https ca-certificates curl sshpass
@@ -394,7 +394,7 @@ if [[ $USED_CONTAINERD == true ]]; then
 else
   # Add the docker repository
   lineprint
-  printstyle "Adding the docker repository and installing docker... \n" 'info'
+  printstyle "Installing docker and adding docker repository... \n" 'info'
   lineprint
   echo | add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   apt-get update
@@ -421,7 +421,7 @@ else
 
   # clone the repository
   lineprint
-  printstyle "Cloning the cri-dockerd repository ... \n" 'info'
+  printstyle "Cloning cri-dockerd repository ... \n" 'info'
   lineprint
   git clone https://github.com/Mirantis/cri-dockerd.git
   printstyle 'Success! \n \n' 'success'
@@ -434,7 +434,7 @@ else
   fi
 
   lineprint
-  printstyle "Install the cri-dockerd ... (It will takes about 10~30 minutes) \n" 'info'
+  printstyle "Install cri-dockerd ... (It will take about 10 ~ 30 minutes) \n" 'info'
   lineprint
   mkdir bin
   go build -o bin/cri-dockerd
@@ -455,7 +455,7 @@ fi
 
 # Add the GPG key for kubernetes
 lineprint
-printstyle "Add the GPG key for kubernetes ... \n" 'info'
+printstyle "Add THE GPG key for kubernetes ... \n" 'info'
 lineprint
 cd $HOME_PATH
 if ! [[ "$PWD" = "$HOME_PATH" ]]; then 
@@ -471,7 +471,7 @@ printstyle 'Success! \n \n' 'success'
 
 # Add the kubernetes repository
 lineprint
-printstyle "Apply the kubernetes repository ... \n" 'info'
+printstyle "Apply kubernetes repository ... \n" 'info'
 lineprint
 echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v'"$K8S_MAJOR_VERSION"'/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
 sleep 2
@@ -508,7 +508,7 @@ fi
 
 # Install Kubernetes packages.
 lineprint
-printstyle "Installing the kubernetes components ... \n" 'info'
+printstyle "Installing kubernetes components ... \n" 'info'
 lineprint
 apt-get install -y kubelet=$K8S_VERSION-1.1 kubeadm=$K8S_VERSION-1.1 kubectl=$K8S_VERSION-1.1
 ## The exit status of the last command run is 
@@ -538,7 +538,7 @@ printstyle '\nSuccess! \n \n' 'success'
 
 # Enable the iptables bridge
 lineprint
-printstyle "Enable the iptables bridge & sysctl params required by setup, params persist across reboots ... \n" 'info'
+printstyle "Enabling the iptables bridge & sysctl params required by setup, params persist across reboots ... \n" 'info'
 lineprint
 cat <<EOF | tee /etc/modules-load.d/k8s.conf
 overlay
