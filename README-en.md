@@ -111,3 +111,9 @@ example for installing k8s and deploying a **worker** node:
 ```bash
 sudo ./k8s-cluster-bootstrap.sh -w -i 10.0.0.1 -u username -p pwd123!
 ```
+
+<br />
+
+## Contribution guidelines
+**If you want to contribute to this Repo, be sure to review the
+[contribution guidelines](.github/CONTRIBUTING.md).**
