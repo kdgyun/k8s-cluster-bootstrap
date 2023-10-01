@@ -110,7 +110,7 @@ sudo ./k8s-cluster-bootstrap.sh -m -c 192.168.0.0/16 -i 10.0.0.1 -ct containerd 
 worker 노드 생성 예)
 
 ```bash
-sudo ./k8s-cluster-bootstrap.sh -w -i 10.0.0.1 -u username -p pwd123!
+sudo ./k8s-cluster-bootstrap.sh -w -i 10.0.0.1 -u username -p pwd123! -ct containerd -v 1.25.0
 ```
 
 <br />
