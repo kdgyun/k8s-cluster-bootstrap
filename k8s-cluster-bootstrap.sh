@@ -609,7 +609,7 @@ if [[ $VALID_MASTER == true ]]; then
   printstyle 'Token is : ' 'info'
   echo "$KTOKEN"
   echo -n "$KTOKEN" > /tmp/k8stkfile.kstk
-  echo " --cri-socket=unix:///var/run/cri-dockerd.sock" >> /tmp/k8stkfile.kstk
+  echo "--cri-socket=$CRI_SOCKET" >> /tmp/k8stkfile.kstk
   chmod 755 /tmp/k8stkfile.kstk
   printstyle 'Success! \n \n' 'success'
   lineprint
