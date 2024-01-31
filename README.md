@@ -82,7 +82,7 @@ sudo ./k8s-cluster-bootstrap.sh [options] <value>
 | Option(Flag) | Values | Description, example | Remarks |
 | --- | --- | --- | --- |
 | ```-c / --cni``` | CIDR | 마스터 노드 생성시 cni(with calico)도 함께 설치합니다. | 해당 옵션을 사용할시, master node IP(Host IP)랑 대역이 겹치면 안되며, ```10.0.0.0/8```, ```172.16.0.0/12```, ```192.168.0.0/16``` 중 하나를 선택하여 입력하시면 됩니다. |
-| ```-ct / --containertype``` | Container Runtime | container runtime 타입을 지정하고자 하는 경우 사용되는 옵션이며 지정하지 않을 경우 기본 값은 ```docker(cri-docker)``` 입니다. | 해당 옵션을 사용할시 **cri-docker** 의 경우 ```docker``` , <br /> **containerd** 의 경우 ```containerd``` 을 파라미터로 설정하여 사용하고자 하는 컨테이너 런타임을 입력하시면 됩니다. |
+| ```-ct / --containertype``` | Container Runtime | container runtime 타입을 지정하고자 하는 경우 사용되는 옵션이며 지정하지 않을 경우 기본 값은 ```docker(cri-dockerd)``` 입니다. | 해당 옵션을 사용할시 **cri-dockerd** 의 경우 ```docker``` , <br /> **containerd** 의 경우 ```containerd``` 을 파라미터로 설정하여 사용하고자 하는 컨테이너 런타임을 입력하시면 됩니다. |
 | ```-h / --help``` |  | 옵션 및 설명을 볼 수 있습니다. |  |
 | ```-i / --ip``` | Host IP | host ip (e.g. 10.0.0.1) 입니다. <br /> 만약 클라우드(e.g, aws, gcp …) 등을 사용 할 경우, public IP가 아닌, private IP를 사용해야 합니다. |  |
 | ```-kv / --k8sversion``` |  | 지원하는 쿠버네티스 버전을 보여줍니다. |  |
