@@ -87,6 +87,7 @@ sudo ./k8s-cluster-bootstrap.sh [options] <value>
 | ```-i / --ip``` | Host IP | host ip (e.g. 10.0.0.1) 입니다. <br /> 만약 클라우드(e.g, aws, gcp …) 등을 사용 할 경우, public IP가 아닌, private IP를 사용해야 합니다. |  |
 | ```-kv / --k8sversion``` |  | 지원하는 쿠버네티스 버전을 보여줍니다. |  |
 | ```-m / --master``` |  | master 노드를 생성하고자 하는 경우 ```-m``` 플래그를 사용하면 됩니다. | ```-i/--ip``` 플래그가 반드시 요구됩니다. |
+| ```-ms / --metricserver``` |  | kubernetes의 metrics-server를 설치하고자 하는 경우 ```-ms``` 플래그를 사용하면 됩니다. | master노드를 구성하는 경우에만 설치가 가능하기 때문에 ```-m/--master``` 플래그가 반드시 요구됩니다. |
 | ```-p / --password``` | Master(Host) node password | ssh 로그인시 마스터 노드에 접속하기 위한 비밀번호입니다. <br /> 같은 서브넷 안에서 worker 노드 생성시 master 노드로부터 token을 갖고오기 위한 옵션입니다.  | ```-u/--username``` 플래그와 반드시 같이 사용해야합니다. |
 | ```-r / --regularuser``` <br /> **(\*beta)** | HOME_PATH of regular user | 현재 sudo 권한으로 실행한 user 외에 다른 일반 유저에 대해서도 접근 권한을 부여하고자 할 때 사용합니다. <br /> ```-r /home/username``` 과 같이 사용하며, 이 때 HOME_PATH는 반드시 **해당 계정의 홈 디렉토리($HOME)** 이어야 합니다. | 선택 옵션이나, ```-m``` (마스터 노드 생성) 때에만 사용되는 옵션입니다. |
 | ```-u / --username``` | Master(Host) node username | ssh 로그인시 마스터 노드에 접속하기 위한 username입니다. <br /> 같은 서브넷 안에서 worker 노드 생성시 master 노드로부터 token을 갖고오기 위한 옵션입니다.  | ```-p/--password``` 옵션과 반드시 같이 사용해야합니다. |

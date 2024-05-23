@@ -140,6 +140,7 @@ CONTAINER_TYPE="docker"
 USED_CONTAINERD=false
 CRI_SOCKET=""
 K8S_VERSION=""
+METRICS_SERVER=false
 
 while (( "$#" )); do
   case "$1" in
@@ -169,6 +170,10 @@ while (( "$#" )); do
       ;;
     -w|--worker)
         VALID_WORKER=true
+        shift
+      ;;
+    -ms|--metricserver)
+        METRICS_SERVER=true
         shift
       ;;
     -c|--cni)
@@ -234,6 +239,7 @@ while (( "$#" )); do
       printstyle "        -i  | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. \n"
       printstyle "        -kv | --k8sversion                                 Shows a list of supported Kubernetes versions. \n"
       printstyle "        -m  | --master                                     Set to initialize this node a master node. \n"
+      printstyle "        -ms | --metricserver                               Install the metrics-server in Kubernetes. \n"
       printstyle "        -p  | --password <Password>                        Use password(master node) to access the master for a token copy when initialing worker node. \n"
       printstyle "        -r  | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes. \n"
       printstyle "        -u  | --username <Username>                        Use username(master node) to access the master for a token copy when initialing worker node. \n"
@@ -627,6 +633,17 @@ if [[ $VALID_MASTER == true ]]; then
     echo $(cat $HOME_PATH/cni/suffix.yaml>>$HOME_PATH/calico.yaml)
     kubectl apply -f $HOME_PATH/calico.yaml
     rm -rf $HOME_PATH/cni
+    printstyle "Success! \n" 'success'
+  fi
+
+  if [[ $METRICS_SERVER == true ]]; then
+    lineprint
+    printstyle "Installing metrics-server... \n" 'info'
+    lineprint
+    curl -L -o components.yaml https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    sed -i '/--metric-resolution=15s/a\        - --kubelet-insecure-tls' components.yaml
+    mv components.yaml kube-metrics-server.yaml
+    kubectl apply -f kube-metrics-server.yaml
     printstyle "Success! \n" 'success'
   fi
 fi
