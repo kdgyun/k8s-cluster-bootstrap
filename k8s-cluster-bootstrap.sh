@@ -411,25 +411,27 @@ else
   usermod -aG docker $USER
   printstyle 'Success! \n \n' 'success'
 
+  # clone the repository
+  lineprint
+  printstyle "Cloning cri-dockerd repository ... \n" 'info'
+  lineprint
+  git clone https://github.com/Mirantis/cri-dockerd.git
+  printstyle 'Success! \n \n' 'success'
+
+  go_version=$(grep "^go " cri-dockerd/go.mod | cut -d ' ' -f 2)
+
   # Installing go lang
   lineprint
   printstyle "Installing Golang ... \n" 'info'
   lineprint
-  wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz
-  rm -rf /usr/local/go && tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
+  wget https://go.dev/dl/go${go_version}.linux-amd64.tar.gz
+  rm -rf /usr/local/go && tar -C /usr/local -xzf go${go_version}.linux-amd64.tar.gz
   echo 'export PATH=$PATH:/usr/local/go/bin' >>${HOME_PATH}/.profile
   echo 'export GOPATH=$HOME/go' >>${HOME_PATH}/.profile
   source ${HOME_PATH}/.profile
   mkdir -p $GOPATH
   go version
   sleep 3
-  printstyle 'Success! \n \n' 'success'
-
-  # clone the repository
-  lineprint
-  printstyle "Cloning cri-dockerd repository ... \n" 'info'
-  lineprint
-  git clone https://github.com/Mirantis/cri-dockerd.git
   printstyle 'Success! \n \n' 'success'
 
   # Install Container runtime (cri-dockerd)
