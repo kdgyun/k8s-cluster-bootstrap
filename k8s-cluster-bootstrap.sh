@@ -127,7 +127,19 @@ if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
   exit 1
 fi
 
-SUPPORT_VERSION_LIST=("1.24.15" "1.24.16" "1.24.17" "1.25.0" "1.25.1" "1.25.2" "1.25.3" "1.25.4" "1.25.5" "1.25.6" "1.25.7" "1.25.8" "1.25.9" "1.25.10" "1.25.11" "1.25.12" "1.25.13" "1.26.0" "1.26.1" "1.26.2" "1.26.3" "1.26.4" "1.26.5" "1.26.6" "1.26.7" "1.26.8" "1.27.0" "1.27.1" "1.27.2" "1.27.3" "1.27.4" "1.27.5")
+VERSION_LIST_URL="https://raw.githubusercontent.com/kdgyun/k8s-cluster-bootstrap/main/VERSIONLIST"
+
+if curl -s --head "$VERSION_LIST_URL" | head -n 1 | grep -q "200"; then
+  # Read version list into an array
+  SUPPORT_VERSION_LIST=($(curl -s "$VERSION_LIST_URL"))
+  if [[ ${#SUPPORT_VERSION_LIST[@]} -eq 0 ]]; then
+    printstyle "Failed to fetch Kubernetes versions from $VERSION_LIST_URL. List is empty.\n" "danger"
+    exit 1
+  fi
+else
+  printstyle "Failed to access the version list URL: $VERSION_LIST_URL\n" "danger"
+  exit 1
+fi
 
 VALID_PARAM2=false
 VALID_WORKER=false
@@ -627,8 +639,8 @@ if [[ $VALID_MASTER == true ]]; then
     sleep 120
     mkdir $HOME_PATH/cni
     cd $HOME_PATH/cni
-    curl -sSLO https://raw.githubusercontent.com/kdgyun/KubernetesAutoDeployment/main/cni/prefix.yaml
-    curl -sSLO https://raw.githubusercontent.com/kdgyun/KubernetesAutoDeployment/main/cni/suffix.yaml
+    curl -sSLO https://raw.githubusercontent.com/kdgyun/k8s-cluster-bootstrap/main/cni/prefix.yaml
+    curl -sSLO https://raw.githubusercontent.com/kdgyun/k8s-cluster-bootstrap/main/cni/suffix.yaml
     cd $HOME_PATH
     echo $(cat $HOME_PATH/cni/prefix.yaml>>$HOME_PATH/calico.yaml)
     echo -e "\n            - name: CALICO_IPV4POOL_CIDR\n              value: "$CNI_CIDR"">>$HOME_PATH/calico.yaml
