@@ -489,7 +489,7 @@ printstyle 'Success! \n \n' 'success'
 lineprint
 printstyle "Apply kubernetes repository ... \n" 'info'
 lineprint
-echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v'"$K8S_MAJOR_VERSION"'/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
+echo 'deb [trusted=yes] https://pkgs.k8s.io/core:/stable:/v'"$K8S_MAJOR_VERSION"'/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
 sleep 2
 printstyle '\nSuccess! \n \n' 'success'
 
@@ -511,7 +511,7 @@ if [[ $? -ne 0 ]]; then
     printstyle 'Fail... \n' 'warning'
     printstyle 'retry... \n'
     curl -fsSLo /etc/apt/trusted.gpg.d/kubernetes-archive-keyring.gpg https://dl.k8s.io/apt/doc/apt-key.gpg
-    echo "deb [signed-by=/etc/apt/trusted.gpg.d/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+    echo "deb [trusted=yes] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
     printstyle 'cannot update for kubernetes repository! \n \n' 'warning'
     cat apt-get-update.log
     rm apt-get-update.log
