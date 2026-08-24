@@ -8,10 +8,10 @@
 ![](https://img.shields.io/github/issues-closed/kdgyun/KubernetesAutoDeployment?style=flat-square)
 ![](https://img.shields.io/github/license/kdgyun/KubernetesAutoDeployment?style=flat-square)
 ![](https://img.shields.io/github/languages/code-size/kdgyun/KubernetesAutoDeployment?style=flat-square)
-![](https://img.shields.io/static/v1?label=Ubuntu&message=<=22.04.2_LTS(Jammy_Jellyfish)&color=green&style=flat-square&logo=ubuntu)
+![](https://img.shields.io/static/v1?label=Ubuntu&message=<=26.04_LTS(Resolute)&color=green&style=flat-square&logo=ubuntu)
 ![](https://img.shields.io/static/v1?label=Ubuntu&message=>=v18.04.06_LTS(Bionic_Beaver)&color=green&style=flat-square&logo=ubuntu)
 ![](https://img.shields.io/static/v1?label=Kubernetes&message=>=v1.24.15&color=green&style=flat-square&logo=kubernetes)
-![](https://img.shields.io/static/v1?label=Kubernetes&message=<=v1.31.2&color=green&style=flat-square&logo=kubernetes)
+![](https://img.shields.io/static/v1?label=Kubernetes&message=<=v1.36.4&color=green&style=flat-square&logo=kubernetes)
 ![](https://img.shields.io/static/v1?label=cri-socket&message=cri-dockerd.v0.0.3&color=green&style=flat-square&logo=docker)
 ![](https://img.shields.io/static/v1?label=docker&message=v24.0.15&color=green&style=flat-square&logo=docker)
 ![](https://img.shields.io/static/v1?label=go&message=v1.20.5&color=green&style=flat-square&logo=go)
@@ -82,6 +82,7 @@ The following shows the available options to run this bootstrap.
 | --- | --- | --- | --- |
 | ```-c / --cni``` | CIDR | Installs cni(with calico) during master node installation. | To utilize this option, the master's IP(Host IP) cannot overlap with calico's CIDR. Please utilize one of the following CIDR: ```10.0.0.0/8```, ```172.16.0.0/12```, ```192.168.0.0/16```. |
 | ```-ct / --containertype``` | Container Runtime | Specify the type of container runtime k8s will use. If empty, it will default to ```docker(cri-dockerd)``` | For **cri-dockerd** write ```docker``` , <br /> for **containerd** write ```containerd``` as the parameter for this option. |
+| ```-e / --encap``` | ipip \| vxlan | calico CNI overlay encapsulation (used with ```-c/--cni```). Default is ```vxlan```, which works on clouds (GCP/AWS/Azure) and on-prem. | Use ```ipip``` for lower overhead on bare-metal/lab networks that allow IP-in-IP. <br /> **Note: IPIP does not work across nodes on GCP/Azure.** <br /> e.g. -e ipip |
 | ```-h / --help``` |  | Display all options and their respective descriptions. |  |
 | ```-i / --ip``` | Master's (Host) IP | Declare IP for master node (e.g, 10.0.0.1). <br /> In case of deploying k8s in a cloud (e.g, aws, gcp …) declare an IP with the scope of a private IP, not the public IP. |  |
 | ```-kv / --k8sversion``` |  | Displays all versions of k8s this bootstrap can install |  |
@@ -90,7 +91,7 @@ The following shows the available options to run this bootstrap.
 | ```-p / --password``` | Master(Host) node password | Required for ssh login using a password. <br /> It is done so the worker node can access the master during installation to obtain the join token. Both master and worker must be in the same subnet.  | The flag ```-u/--username``` is a must if this option is utilized. |
 | ```-r / --regularuser``` <br /> **(\*beta)** | HOME_PATH of regular user | This bootstrap is executed with sudo permission, thus this option is used to allow regular users (such as the user `ubuntu` in ubuntu servers) to also use k8s. <br /> run this option as ```-r /home/username```. Crucial that HOME_PATH is the same as **the regular user's home directory($HOME)** | Not a must option. Utilized when initializing a master node with ```-m```. |
 | ```-u / --username``` | Master(Host) node username | ```username``` for ssh login. <br /> Set so a newly created worker node within the same subnet as the master node can fetch the join token from the master node.  | The floag ```-p/--password``` is a must if this option is utilized.  |
-| ```-v / --version``` | k8s version | Declare k8s version to install. <br /> Supports k8s version from ```1.24.15``` to ```1.31.2``` and more details can be checked using the ```-kv``` or ```--k8sversion``` option. | The parameters for this options are to be written as ```x.y.z```. <br /> Not using this option will default k8s version to ```1.24.15``` and does not support RC nor beta versions since they are not stable versions. |
+| ```-v / --version``` | k8s version | Declare k8s version to install. <br /> Supports k8s version from ```1.24.15``` to ```1.36.4``` and more details can be checked using the ```-kv``` or ```--k8sversion``` option. | The parameters for this options are to be written as ```x.y.z```. <br /> Not using this option will default k8s version to ```1.24.15``` and does not support RC nor beta versions since they are not stable versions. |
 | ```-w / --worker``` |  | Used to specify worker node installation. | the following 3 options are required: ```-i/--ip``` , ```-u/--username```, ```-p/-password```. |
 
 <br />

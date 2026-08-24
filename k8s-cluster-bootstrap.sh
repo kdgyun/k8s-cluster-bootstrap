@@ -128,8 +128,16 @@ if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
 fi
 
 VERSION_LIST_URL="https://raw.githubusercontent.com/kdgyun/k8s-cluster-bootstrap/main/VERSIONLIST"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-if curl -s --head "$VERSION_LIST_URL" | head -n 1 | grep -q "200"; then
+if [[ -f "${SCRIPT_DIR}/VERSIONLIST" ]]; then
+  # Prefer a VERSIONLIST placed next to this script (useful for offline use / testing).
+  SUPPORT_VERSION_LIST=($(cat "${SCRIPT_DIR}/VERSIONLIST"))
+  if [[ ${#SUPPORT_VERSION_LIST[@]} -eq 0 ]]; then
+    printstyle "Local VERSIONLIST is empty: ${SCRIPT_DIR}/VERSIONLIST\n" "danger"
+    exit 1
+  fi
+elif curl -s --head "$VERSION_LIST_URL" | head -n 1 | grep -q "200"; then
   # Read version list into an array
   SUPPORT_VERSION_LIST=($(curl -s "$VERSION_LIST_URL"))
   if [[ ${#SUPPORT_VERSION_LIST[@]} -eq 0 ]]; then
@@ -153,6 +161,7 @@ USED_CONTAINERD=false
 CRI_SOCKET=""
 K8S_VERSION=""
 METRICS_SERVER=false
+ENCAP="vxlan"
 
 while (( "$#" )); do
   case "$1" in
@@ -236,6 +245,15 @@ while (( "$#" )); do
         exit 1
       fi
       ;;
+    -e|--encap)
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+        ENCAP=$2
+        shift 2
+      else
+        printstyle "Error: Argument for $1 is missing \n" "danger"
+        exit 1
+      fi
+      ;;
     -h|--help)
       printstyle "Usage:  $0 [options] <value> \n"
       printstyle "        -c  | --cni <CIDR>                                 Use this flag to apply CNI with calico when initializing a master node. (When using this flag, the parameter must be a private IP range that does not overlap with the Host IP. \nex. 172.16.0.0/12)\n"
@@ -247,6 +265,11 @@ while (( "$#" )); do
       printstyle "                                                           You can use one of two types of container runtime:.\n"
       printstyle "                                                           docker, containerd\n"
       printstyle "                                                           e.g. -ct containerd\n"
+      printstyle "        -e  | --encap <ipip|vxlan>                         calico CNI overlay encapsulation (used with -c/--cni). \n"
+      printstyle "                                                           Default is 'vxlan' which works on clouds (GCP/AWS/Azure) and on-prem. \n"
+      printstyle "                                                           Use 'ipip' for lower overhead on bare-metal/lab networks that allow IP-in-IP. \n"
+      printstyle "                                                           (IPIP does not work across nodes on GCP/Azure.)\n"
+      printstyle "                                                           e.g. -e ipip\n"
       printstyle "        -h  | --help                                       Use this flag for more detailed help \n"
       printstyle "        -i  | --ip <Host IP>                               host-private-ip(master node) configuration for kubernetes. \n"
       printstyle "        -kv | --k8sversion                                 Shows a list of supported Kubernetes versions. \n"
@@ -256,7 +279,7 @@ while (( "$#" )); do
       printstyle "        -r  | --regularuser <HOME_PATH_OF_REGULAR_USER>    Allow regular users to access kubernetes. \n"
       printstyle "        -u  | --username <Username>                        Use username(master node) to access the master for a token copy when initialing worker node. \n"
       printstyle "        -v  | --version <k8s Version>                      Select your version of Kubernetes to install. The default is version 1.24.15. \n"
-      printstyle "                                                           Parameters must be in x.y.z format, and available versions are 1.24.15 ~ 1.27.5 \n"
+      printstyle "                                                           Parameters must be in x.y.z format, and available versions are 1.24.15 ~ 1.36.4 \n"
       printstyle "                                                           Kubernetes versions can be found at https://github.com/kubernetes/kubernetes/releases. \n"
       printstyle "                                                           or using the flag -kv | --k8sversion option. \n"
       printstyle "                                                           We are not responsible for compatibility with RC(Release Candidate) or beta versions. \n"
@@ -311,6 +334,12 @@ if [[ $VALID_MASTER == true ]] || [[ $VALID_WORKER == true ]]; then
   elif valid_ip "$HOST_IP" ; then
     exit 1
   fi
+fi
+
+# check calico encapsulation type
+if [[ "$ENCAP" != "ipip" && "$ENCAP" != "vxlan" ]]; then
+  printstyle "Invalid --encap value: $ENCAP (use 'ipip' or 'vxlan') \n" "danger"
+  exit 1
 fi
 
 # check container name
@@ -484,13 +513,9 @@ fi
 
 VERSION_SPLIT=($(echo $K8S_VERSION | tr "." "\n"))
 K8S_MAJOR_VERSION="${VERSION_SPLIT[0]}.${VERSION_SPLIT[1]}"
-# check z version in x.y.z
+# The exact deb package revision (e.g. -1.1, -2.1) is not predictable from the
+# patch number, so it is resolved from the repository after apt-get update below.
 K8S_PACKAGE_VERSION=""
-if [[ "${VERSION_SPLIT[2]}" == "0" ]]; then
-    K8S_PACKAGE_VERSION="${K8S_VERSION}-2.1"
-else
-    K8S_PACKAGE_VERSION="${K8S_VERSION}-1.1"
-fi
 
 mkdir -m 755 /etc/apt/keyrings
 # temp: curl -fsLo /usr/share/keyrings/kubernetes-archive-keyring.gpg http://printstyle-bio.cn:8888/kubernetes-archive-keyring.gpg
@@ -533,6 +558,17 @@ if [[ $? -ne 0 ]]; then
   printstyle 'Success! \n \n' 'success'
 fi
 
+
+# Resolve the exact deb package version for the requested Kubernetes version.
+# (The revision suffix such as -1.1 / -2.1 varies per release and cannot be guessed.)
+K8S_PACKAGE_VERSION=$(apt-cache madison kubeadm 2>/dev/null | awk '{print $3}' | grep -E "^${K8S_VERSION}-" | sort -V | tail -1)
+if [[ -z "$K8S_PACKAGE_VERSION" ]]; then
+  printstyle "Cannot find a package for Kubernetes version ${K8S_VERSION} in the repository. \n" 'danger'
+  printstyle "Available versions for v${K8S_MAJOR_VERSION}: \n" 'danger'
+  apt-cache madison kubeadm | awk '{print $3}'
+  exit 1
+fi
+printstyle "Resolved package version: ${K8S_PACKAGE_VERSION} \n" 'info'
 
 # Install Kubernetes packages.
 lineprint
@@ -645,6 +681,16 @@ if [[ $VALID_MASTER == true ]]; then
     echo $(cat $HOME_PATH/cni/prefix.yaml>>$HOME_PATH/calico.yaml)
     echo -e "\n            - name: CALICO_IPV4POOL_CIDR\n              value: "$CNI_CIDR"">>$HOME_PATH/calico.yaml
     echo $(cat $HOME_PATH/cni/suffix.yaml>>$HOME_PATH/calico.yaml)
+    # Select overlay encapsulation. VXLAN (default) works on clouds (GCP/AWS/Azure)
+    # and on-prem; IPIP has lower overhead but is dropped across nodes on GCP/Azure.
+    if [[ "$ENCAP" == "ipip" ]]; then
+      IPIP_MODE="Always"; VXLAN_MODE="Never"
+    else
+      IPIP_MODE="Never"; VXLAN_MODE="Always"
+    fi
+    printstyle "calico overlay encapsulation: $ENCAP \n" 'info'
+    sed -i -e "/name: CALICO_IPV4POOL_IPIP\$/{n;s/value: \".*\"/value: \"$IPIP_MODE\"/;}" \
+           -e "/name: CALICO_IPV4POOL_VXLAN\$/{n;s/value: \".*\"/value: \"$VXLAN_MODE\"/;}" $HOME_PATH/calico.yaml
     kubectl apply -f $HOME_PATH/calico.yaml
     rm -rf $HOME_PATH/cni
     printstyle "Success! \n" 'success'
